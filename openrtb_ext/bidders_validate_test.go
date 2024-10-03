@@ -50,12 +50,12 @@ func TestBidderUniquenessGatekeeping(t *testing.T) {
 	// - Exclude duplicates of adapters for the same bidder, as it's unlikely a publisher will use both.
 	var bidders []string
 	for _, bidder := range CoreBidderNames() {
-		if bidder != BidderTripleliftNative && bidder != BidderAdkernelAdn && bidder != BidderFreewheelSSPOld {
+		if bidder != BidderSilverPush && bidder != BidderTripleliftNative && bidder != BidderAdkernelAdn && bidder != BidderFreewheelSSPOld && bidder != BidderYahooAdvertising {
 			bidders = append(bidders, string(bidder))
 		}
 	}
 
-	currentThreshold := 11
+	currentThreshold := 6
 	measuredThreshold := minUniquePrefixLength(bidders)
 
 	assert.NotZero(t, measuredThreshold, "BidderMap contains duplicate bidder name values.")
