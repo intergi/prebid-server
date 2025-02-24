@@ -2,11 +2,6 @@ metadata:
   serviceAccount:
     irsa:
       roleName: dev-0001-svc-prebid-server
-  
-#externalSecret:
-#  dataFromKey: dev-0001/svc/prebid-server
-  
-
 externalSecret:
   enabled: true
 
