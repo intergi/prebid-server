@@ -39,8 +39,8 @@ RUN chmod -R a+r static/ stored_requests/data
 RUN apt-get update && \
     apt-get install -y --no-install-recommends ca-certificates mtr libatomic1 && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-RUN addgroup --system --gid 2001 prebidgroup && adduser --system --uid 1001 --ingroup prebidgroup heroku
-USER heroku
+RUN addgroup --system --gid 2001 prebidgroup && adduser --system --uid 1001 --ingroup prebidgroup prebid
+USER prebid
 EXPOSE 8000
 EXPOSE 6060
 ENTRYPOINT ["/usr/local/bin/prebid-server"]
