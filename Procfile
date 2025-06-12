@@ -1,1 +1,1 @@
-web: PBS_PORT=$PORT bin/prebid-server -stderrthreshold=DEBUG
+web: PBS_PORT=$PORT bin/prebid-server -stderrthreshold=DEBUG -logtostderr
