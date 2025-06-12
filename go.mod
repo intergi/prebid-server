@@ -4,9 +4,6 @@ go 1.23.0
 
 retract v3.0.0 // Forgot to update major version in import path and module name
 
-// Magic comment that determines which Go version Heroku uses.
-// +heroku goVersion go1.23
-
 require (
 	github.com/51Degrees/device-detection-go/v4 v4.4.35
 	github.com/DATA-DOG/go-sqlmock v1.5.0
