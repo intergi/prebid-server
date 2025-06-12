@@ -1,5 +1,0 @@
-#!/bin/bash
-# https://github.com/prebid/prebid-server/blob/master/version/version.go#L6
-
-go build -ldflags "-X github.com/prebid/prebid-server/version.Ver=`git describe --tags | sed 's/^v//`"
-go build -ldflags "-X github.com/prebid/prebid-server/version.Rev=`git rev-parse --short HEAD`"
