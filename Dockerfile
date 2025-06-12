@@ -17,6 +17,8 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends git gcc build-essential && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+RUN git rev-parse HEAD
+
 # CGO must be enabled because some modules depend on native C code
 ENV CGO_ENABLED 1
 COPY ./ ./
