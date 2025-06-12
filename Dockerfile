@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 ubuntu:22.04 AS build
+FROM ubuntu:22.04 AS build
 RUN apt-get update && \
     apt-get -y upgrade && \
     apt-get install -y --no-install-recommends wget ca-certificates
