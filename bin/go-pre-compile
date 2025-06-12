@@ -1,0 +1,6 @@
+#!/bin/bash
+
+APP_VERSION=$(git describe --tags | sed 's/^v//')
+APP_REVISION=$(git rev-parse --short HEAD)
+
+export LDFLAGS="-X github.com/prebid/prebid-server/version.Ver=${APP_VERSION}"
