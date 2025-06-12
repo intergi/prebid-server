@@ -41,7 +41,7 @@ RUN apt-get update && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 RUN addgroup --system --gid 2001 prebidgroup && adduser --system --uid 1001 --ingroup prebidgroup prebid
 USER prebid
-EXPOSE ${PORT:-8000}
-EXPOSE ${ADMIN_PORT:-6060}
+EXPOSE 8000
+EXPOSE 6060
 ENTRYPOINT ["/usr/local/bin/prebid-server"]
 CMD ["-v", "1", "-logtostderr"]

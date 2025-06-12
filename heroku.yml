@@ -1,3 +1,5 @@
 build:
   docker:
     web: Dockerfile
+run:
+  web: PBS_PORT=$PORT /usr/local/bin/prebid-server -v 1 -logtostderr
