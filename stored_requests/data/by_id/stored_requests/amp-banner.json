@@ -1,5 +1,8 @@
 {
     "id": "amp-banner",
+    "site": {
+        "page": "playwire.com"
+    },
     "imp": [
         {
             "id": "amp-banner-imp",
