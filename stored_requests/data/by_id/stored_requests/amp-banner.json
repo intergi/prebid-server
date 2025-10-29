@@ -16,6 +16,7 @@
                 ]
             },
             "ext": {
+                "gpid" : "med_rect_atf",
                 "data": {
                     "adunit" : "med_rect_atf",
                     "pbadslot": "med_rect_atf",
@@ -27,6 +28,16 @@
                         "appnexus": {
                             "placementId": "31702144",
                             "allowSmallerSizes": true
+                        },
+                         "gumgum": {
+                            "zone": "6cj92jaa"
+                        },
+                        "ix": {
+                            "siteId": "1064288"
+                        },
+                        "openx": {
+                            "unit": "560438818",
+                            "delDomain": "playwire-d.openx.net"
                         }
                     }
                 }
