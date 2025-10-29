@@ -1,24 +1,25 @@
 {
-  "id": "amp-banner",
-  "banner": {
-    "format": [
-      {
-        "w": 300,
-        "h": 250
-      },
-      {
-        "w": 300,
-        "h": 600
-      }
-    ]
-  },
-  "ext": {
-    "prebid": {
-      "bidder": {
-        "appnexus": {
-          "placement_id": 12883451
+    "id": "amp-banner",
+    "imp": [
+        {
+            "id": "amp-banner-imp",
+            "banner": {
+                "format": [
+                    {
+                        "w": 300,
+                        "h": 250
+                    }
+                ]
+            },
+            "ext": {
+                "prebid": {
+                    "bidder": {
+                        "appnexus": {
+                            "placement_id": 12883451
+                        }
+                    }
+                }
+            }
         }
-      }
-    }
-  }
+    ]
 }
