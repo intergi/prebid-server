@@ -6,7 +6,7 @@
     "test" : 1,
     "imp": [
         {
-            "id": "amp-banner-imp",
+            "id": "med_rect_atf",
             "banner": {
                 "format": [
                     {
@@ -16,14 +16,22 @@
                 ]
             },
             "ext": {
+                "data": {
+                    "adunit" : "med_rect_atf",
+                    "pbadslot": "med_rect_atf",
+                    "pos": "atf"
+                },
                 "prebid": {
+                    "adUnitCode": "med_rect_atf",
                     "bidder": {
                         "appnexus": {
-                            "placementId": 31702144
+                            "placementId": "31702144",
+                            "allowSmallerSizes": true
                         }
                     }
                 }
-            }
+            },
+            "secure": 1
         }
     ]
 }
