@@ -3,6 +3,7 @@
     "site": {
         "page": "playwire.com"
     },
+    "test" : 1,
     "imp": [
         {
             "id": "amp-banner-imp",
