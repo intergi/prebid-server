@@ -1,9 +1,16 @@
 {
-    "id": "amp-banner",
+    "id": "med_rect_atf",
     "site": {
         "page": "gamezone.com"
     },
     "test": 1,
+    "ext": {
+        "prebid": {
+            "cache": {
+                "bids": {}
+            }
+        }
+    },
     "source": {
         "schain": {
             "ver": "1.0",
