@@ -3,7 +3,20 @@
     "site": {
         "page": "gamezone.com"
     },
-    "test" : 1,
+    "test": 1,
+    "source": {
+        "schain": {
+            "ver": "1.0",
+            "complete": 1,
+            "nodes": [
+                {
+                    "asi": "playwire.com",
+                    "sid": "343",
+                    "hp": 1
+                }
+            ]
+        }
+    },
     "imp": [
         {
             "id": "med_rect_atf",
@@ -16,9 +29,9 @@
                 ]
             },
             "ext": {
-                "gpid" : "med_rect_atf",
+                "gpid": "med_rect_atf",
                 "data": {
-                    "adunit" : "med_rect_atf",
+                    "adunit": "med_rect_atf",
                     "pbadslot": "med_rect_atf",
                     "pos": "atf"
                 },
@@ -29,7 +42,7 @@
                             "placementId": "31702144",
                             "allowSmallerSizes": true
                         },
-                         "gumgum": {
+                        "gumgum": {
                             "zone": "6cj92jaa"
                         },
                         "ix": {
