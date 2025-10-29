@@ -18,7 +18,7 @@
                 "prebid": {
                     "bidder": {
                         "appnexus": {
-                            "placement_id": 12883451
+                            "placementId": 31702144
                         }
                     }
                 }
