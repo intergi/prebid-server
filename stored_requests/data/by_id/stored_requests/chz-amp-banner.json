@@ -1,0 +1,97 @@
+{
+    "id": "standard_iab_cntr1",
+    "site": {
+        "page": "cheezburger.com"
+    },
+    "test": 1,
+    "ext": {
+        "prebid": {
+            "cache": {
+                "bids": {}
+            }
+        }
+    },
+    "source": {
+        "schain": {
+            "ver": "1.0",
+            "complete": 1,
+            "nodes": [
+                {
+                    "asi": "playwire.com",
+                    "sid": "343",
+                    "hp": 1
+                }
+            ]
+        }
+    },
+    "imp": [
+        {
+            "id": "standard_iab_cntr1",
+            "banner": {
+                "format": [
+                    {
+                        "w": 300,
+                        "h": 250
+                    }
+                ]
+            },
+            "ext": {
+                "gpid": "standard_iab_cntr1",
+                "data": {
+                    "adunit": "standard_iab_cntr1",
+                    "pbadslot": "standard_iab_cntr1"
+                },
+                "prebid": {
+                    "bidder": {
+                        "appnexus": {
+                            "placementId": "31702144",
+                            "allowSmallerSizes": true
+                        },
+                        "rubicon": {
+                            "accountId": 12556,
+                            "siteId": 538704,
+                            "zoneId": 3320452
+                        },
+                        "openx": {
+                            "unit": "560438818",
+                            "delDomain": "playwire-d.openx.net"
+                        },
+                        "ix": {
+                            "siteId": "1064288"
+                        },
+                        "gumgum": {
+                            "zone": "6cj92jaa"
+                        },
+                        "sonobi": {
+                            "TagID": "64495cf598ecc67e6ec2"
+                        },
+                        "triplelift": {
+                            "inventoryCode": "PW_RON_Native_Incontent_S2S"
+                        },
+                        "sharethrough": {
+                            "pkey": "SSj2vV3YZFuf6iex4lYoh4Fb"
+                        },
+                        "pubmatic": {
+                            "publisherId": "158326",
+                            "adSlot": "5635259"
+                        },
+                        "rise": {
+                            "publisher_id": "6280c6f1899612000123320b"
+                        },
+                        "vidazoo": {
+                            "cId": "676998c3489fe4b8096666b8",
+                            "pId": "59ac17c192832d0011283fe3",
+                            "subDomain": "prebid"
+                        },
+                        "medianet": {
+                            "cid": "8CUIBM874",
+                            "crid": "760020879"
+                        }
+                    },
+                    "adunitcode": "standard_iab_cntr1"
+                }
+            },
+            "secure": 1
+        }
+    ]
+}
