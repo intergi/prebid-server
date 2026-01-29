@@ -1,5 +1,5 @@
 {
-    "id": "standard_iab_cntr1",
+    "id": "standard_iab_cntr3",
     "site": {
         "page": "cheezburger.com"
     },
@@ -19,9 +19,6 @@
                 "ss_sonobi": "sonobi",
                 "ss_triplelift": "triplelift",
                 "ss_vidazoo": "vidazoo"
-            },
-            "cache": {
-                "bids": {}
             }
         }
     },
@@ -31,8 +28,8 @@
             "complete": 1,
             "nodes": [
                 {
-                    "asi": "playwire.com",
-                    "sid": "343",
+                    "asi": "literally.media",
+                    "sid": "1025548",
                     "hp": 1
                 }
             ]
@@ -40,7 +37,7 @@
     },
     "imp": [
         {
-            "id": "standard_iab_cntr1",
+            "id": "standard_iab_cntr3",
             "banner": {
                 "format": [
                     {
@@ -50,10 +47,10 @@
                 ]
             },
             "ext": {
-                "gpid": "standard_iab_cntr1",
+                "gpid": "standard_iab_cntr3",
                 "data": {
-                    "adunit": "standard_iab_cntr1",
-                    "pbadslot": "standard_iab_cntr1"
+                    "adunit": "standard_iab_cntr3",
+                    "pbadslot": "standard_iab_cntr3"
                 },
                 "prebid": {
                     "bidder": {
@@ -102,7 +99,33 @@
                             "crid": "760020879"
                         }
                     },
-                    "adunitcode": "standard_iab_cntr1"
+                    "targeting":{
+                        "pricegranularity":{
+                            "ranges":[
+                                {
+                                "precision": 2,
+                                "max": 3,
+                                "increment": 0.01
+                            },
+                            {
+                                "precision": 2,
+                                "max": 8,
+                                "increment": 0.05
+                            },
+                            {
+                                "precision": 2,
+                                "max": 15,
+                                "increment": 0.25
+                            },
+                            {
+                                "precision": 2,
+                                "max": 30,
+                                "increment": 1
+                            }
+                            ]   
+                        }
+                    },
+                    "adunitcode": "standard_iab_cntr3"
                 }
             },
             "secure": 1
