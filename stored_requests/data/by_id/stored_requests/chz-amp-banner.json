@@ -42,48 +42,62 @@
                     "pbadslot": "standard_iab_cntr1"
                 },
                 "prebid": {
+                    "aliases": {
+                            "ss_appnexus": "appnexus",
+                            "ss_gumgum": "gumgum",
+                            "ss_ix": "ix",
+                            "ss_medianet": "medianet",
+                            "ss_openx": "openx",
+                            "ss_pubmatic": "pubmatic",
+                            "ss_rise": "rise",
+                            "ss_rubicon": "rubicon",
+                            "ss_sharethrough": "sharethrough",
+                            "ss_sonobi": "sonobi",
+                            "ss_triplelift": "triplelift",
+                            "ss_vidazoo": "vidazoo"
+                        },
                     "bidder": {
-                        "appnexus": {
+                        "ss_appnexus": {
                             "placementId": "31702144",
                             "allowSmallerSizes": true
                         },
-                        "rubicon": {
+                        "ss_rubicon": {
                             "accountId": 12556,
                             "siteId": 538704,
                             "zoneId": 3320452
                         },
-                        "openx": {
+                        "ss_openx": {
                             "unit": "560438818",
                             "delDomain": "playwire-d.openx.net"
                         },
-                        "ix": {
+                        "ss_ix": {
                             "siteId": "1064288"
                         },
-                        "gumgum": {
+                        "ss_gumgum": {
                             "zone": "6cj92jaa"
                         },
-                        "sonobi": {
+                        "ss_sonobi": {
                             "TagID": "64495cf598ecc67e6ec2"
                         },
-                        "triplelift": {
+                        "ss_triplelift": {
                             "inventoryCode": "PW_RON_Native_Incontent_S2S"
                         },
-                        "sharethrough": {
+                        "ss_sharethrough": {
                             "pkey": "SSj2vV3YZFuf6iex4lYoh4Fb"
                         },
-                        "pubmatic": {
+                        "ss_pubmatic": {
                             "publisherId": "158326",
                             "adSlot": "5635259"
                         },
-                        "rise": {
+                        "ss_rise": {
                             "publisher_id": "6280c6f1899612000123320b"
                         },
-                        "vidazoo": {
+                        "ss_vidazoo": {
                             "cId": "676998c3489fe4b8096666b8",
                             "pId": "59ac17c192832d0011283fe3",
                             "subDomain": "prebid"
                         },
-                        "medianet": {
+                        "ss_medianet": {
                             "cid": "8CUIBM874",
                             "crid": "760020879"
                         }
