@@ -19,6 +19,32 @@
                 "ss_sonobi": "sonobi",
                 "ss_triplelift": "triplelift",
                 "ss_vidazoo": "vidazoo"
+            },
+            "targeting": {
+                "pricegranularity": {
+                    "ranges": [
+                        {
+                            "precision": 2,
+                            "max": 3,
+                            "increment": 0.01
+                        },
+                        {
+                            "precision": 2,
+                            "max": 8,
+                            "increment": 0.05
+                        },
+                        {
+                            "precision": 2,
+                            "max": 15,
+                            "increment": 0.25
+                        },
+                        {
+                            "precision": 2,
+                            "max": 30,
+                            "increment": 1
+                        }
+                    ]
+                }
             }
         }
     },
@@ -97,32 +123,6 @@
                         "ss_medianet": {
                             "cid": "8CUIBM874",
                             "crid": "760020879"
-                        }
-                    },
-                    "targeting":{
-                        "pricegranularity":{
-                            "ranges":[
-                                {
-                                "precision": 2,
-                                "max": 3,
-                                "increment": 0.01
-                            },
-                            {
-                                "precision": 2,
-                                "max": 8,
-                                "increment": 0.05
-                            },
-                            {
-                                "precision": 2,
-                                "max": 15,
-                                "increment": 0.25
-                            },
-                            {
-                                "precision": 2,
-                                "max": 30,
-                                "increment": 1
-                            }
-                            ]   
                         }
                     },
                     "adunitcode": "standard_iab_cntr3"
