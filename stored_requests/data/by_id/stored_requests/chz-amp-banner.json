@@ -6,6 +6,20 @@
     "test": 1,
     "ext": {
         "prebid": {
+            "aliases": {
+                "ss_appnexus": "appnexus",
+                "ss_gumgum": "gumgum",
+                "ss_ix": "ix",
+                "ss_medianet": "medianet",
+                "ss_openx": "openx",
+                "ss_pubmatic": "pubmatic",
+                "ss_rise": "rise",
+                "ss_rubicon": "rubicon",
+                "ss_sharethrough": "sharethrough",
+                "ss_sonobi": "sonobi",
+                "ss_triplelift": "triplelift",
+                "ss_vidazoo": "vidazoo"
+            },
             "cache": {
                 "bids": {}
             }
@@ -42,20 +56,6 @@
                     "pbadslot": "standard_iab_cntr1"
                 },
                 "prebid": {
-                    "aliases": {
-                            "ss_appnexus": "appnexus",
-                            "ss_gumgum": "gumgum",
-                            "ss_ix": "ix",
-                            "ss_medianet": "medianet",
-                            "ss_openx": "openx",
-                            "ss_pubmatic": "pubmatic",
-                            "ss_rise": "rise",
-                            "ss_rubicon": "rubicon",
-                            "ss_sharethrough": "sharethrough",
-                            "ss_sonobi": "sonobi",
-                            "ss_triplelift": "triplelift",
-                            "ss_vidazoo": "vidazoo"
-                        },
                     "bidder": {
                         "ss_appnexus": {
                             "placementId": "31702144",
