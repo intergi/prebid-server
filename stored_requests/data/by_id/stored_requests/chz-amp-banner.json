@@ -3,6 +3,7 @@
     "site": {
         "page": "cheezburger.com"
     },
+    "test": 1,
     "ext": {
         "prebid": {
             "aliases": {
