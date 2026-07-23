@@ -3886,6 +3886,49 @@ func TestParseGzipedRequest(t *testing.T) {
 	}
 }
 
+// TestParseGzipedRequestWithQueryParam verifies that a gzip compressed request is
+// decoded when it is flagged via the 'gzip=1' query param instead of the Content-Encoding header.
+func TestParseGzipedRequestWithQueryParam(t *testing.T) {
+	deps := &endpointDeps{
+		fakeUUIDGenerator{},
+		&warningsCheckExchange{},
+		ortb.NewRequestValidator(openrtb_ext.BuildBidderMap(), map[string]string{}, mockBidderParamValidator{}),
+		&mockStoredReqFetcher{},
+		empty_fetcher.EmptyFetcher{},
+		empty_fetcher.EmptyFetcher{},
+		&config.Configuration{MaxRequestSize: int64(2000), Compression: config.Compression{Request: config.CompressionInfo{GZIP: true}}},
+		&metricsConfig.NilMetricsEngine{},
+		analyticsBuild.New(&config.Analytics{}),
+		map[string]string{},
+		false,
+		[]byte{},
+		openrtb_ext.BuildBidderMap(),
+		nil,
+		nil,
+		hardcodedResponseIPValidator{response: true},
+		empty_fetcher.EmptyFetcher{},
+		hooks.EmptyPlanBuilder{},
+		nil,
+		openrtb_ext.NormalizeBidderName,
+	}
+
+	var compressed bytes.Buffer
+	gw := gzip.NewWriter(&compressed)
+	_, err := gw.Write([]byte(validRequest(t, "site.json")))
+	assert.NoError(t, err, "Error writing gzip compressed request body")
+	assert.NoError(t, gw.Close(), "Error closing gzip writer")
+
+	// Note: no Content-Encoding header, only the gzip=1 query param.
+	req := httptest.NewRequest("POST", "/openrtb2/auction?gzip=1", bytes.NewReader(compressed.Bytes()))
+
+	hookExecutor := hookexecution.NewHookExecutor(deps.hookExecutionPlanBuilder, hookexecution.EndpointAuction, deps.metricsEngine)
+	resReq, impExtInfoMap, _, _, _, _, errL := deps.parseRequest(req, &metrics.Labels{}, hookExecutor)
+
+	assert.Nil(t, errL, "Error list should be nil")
+	assert.NotNil(t, resReq, "Result request should not be nil")
+	assert.NotNil(t, impExtInfoMap, "Impression info map should not be nil")
+}
+
 func TestAuctionResponseHeaders(t *testing.T) {
 	testCases := []struct {
 		description     string

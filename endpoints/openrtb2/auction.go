@@ -422,6 +422,11 @@ func (deps *endpointDeps) parseRequest(httpRequest *http.Request, labels *metric
 	var errL []error
 	var r io.ReadCloser = httpRequest.Body
 	reqContentEncoding := httputil.ContentEncoding(httpRequest.Header.Get("Content-Encoding"))
+	// PBJS doesn't send 'Content-Encoding: gzip' but it sends 'gzip=1' query param,
+	// so we can use that to determine if the request is gzip compressed
+	if reqContentEncoding == "" && httpRequest.URL.Query().Get("gzip") == "1" {
+		reqContentEncoding = httputil.ContentEncodingGZIP
+	}
 	if reqContentEncoding != "" {
 		if !deps.cfg.Compression.Request.IsSupported(reqContentEncoding) {
 			errs = []error{fmt.Errorf("Content-Encoding of type %s is not supported", reqContentEncoding)}
