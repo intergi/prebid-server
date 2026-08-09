@@ -1,0 +1,53 @@
+#apiVersion: argoproj.io/v1alpha1
+#kind: Application
+#metadata:
+#  name: prod-0001-play-tracker
+#  namespace: argo
+#  finalizers:
+#    - resources-finalizer.argocd.argoproj.io
+#spec:
+#  destination:
+#    server: "https://kubernetes.default.svc"
+#    namespace: prod-0001
+#  source:
+#    repoURL: 203918842499.dkr.ecr.us-east-1.amazonaws.com
+#    path: '/'
+#    targetRevision: 0.0.12
+#    chart: base
+#    helm:
+#      parameters:
+#        - name: readinessProbe
+#          value: "null"
+#        - name: livenessProbe
+#          value: "null"
+#      # HELM values
+#      valuesObject:
+#        fullnameOverride: play-tracker
+#        metadata:
+#          envName: "prod-0001"
+#        ports:
+#          - name: http
+#            port: 3000
+#            protocol: TCP
+#        image:
+#          registry: 203918842499.dkr.ecr.us-east-1.amazonaws.com
+#          repository: svc-play-tracker
+#          tag: IMAGE_TAG_PLACEHOLDER
+#        ingress:
+#          host: play-tracker.prod-aws.playwire.com
+#        env:
+#          ATHENA_DATABASE: "app_data_ngx"
+#          AWS_REGION: "us-east-1"
+#          LANG: "en_US.UTF-8"
+#          RACK_ENV: "production"
+#          RAILS_ENV: "production"
+#          RAILS_LOG_TO_STDOUT: "enabled"
+#          RAILS_SERVE_STATIC_FILES: "enabled"
+#          PORT: 3000
+#      # end HELM values
+#  project: apps-project
+#  syncPolicy:
+#    automated:
+#      prune: true
+#      selfHeal: true
+#

@@ -1,0 +1,64 @@
+name: Build and Deploy DEV
+
+on:
+  push:
+    branches:
+      - main
+      - D-0001
+
+permissions:
+  id-token: write
+  contents: read
+env:
+  SERVICE_NAME: "prebid-server"
+  AWS_REGION_NAME: "us-east-1"
+  AWS_ACCOUNT_ID: "203918842499"
+  GIT_REF: "${{ inputs.git_ref || github.head_ref || github.ref_name }}"
+  ENV_NAME: "dev-0001"
+
+jobs:
+  pre-init:
+    outputs:
+      GIT_REF: ${{ env.GIT_REF }}
+      AWS_ROLE_NAME: "gh-svc-${{ env.SERVICE_NAME }}"
+      AWS_REGION_NAME: ${{ env.AWS_REGION_NAME }}
+      AWS_ACCOUNT_ID: ${{ env.AWS_ACCOUNT_ID }}
+      SERVICE_NAME: ${{ env.SERVICE_NAME }}
+      ENV_NAME: ${{ env.ENV_NAME }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Set env variables
+        run: date
+
+  Build:
+    strategy:
+      matrix:
+        service:
+          - name: svc
+            dockerfile: "./deploy/images/k8s.dockerfile"
+            registry_name: "svc-${{ needs.pre-init.outputs.SERVICE_NAME }}"
+    needs:
+      - pre-init
+    uses: intergi/WORKFLOWS/.github/workflows/docker_build_push_to_ecr.yaml@main
+    with:
+      GIT_REF: "${{ needs.pre-init.outputs.GIT_REF }}"
+      AWS_REGION_NAME: "${{ needs.pre-init.outputs.AWS_REGION_NAME }}"
+      ENV: ${{ needs.pre-init.outputs.ENV_NAME }}
+      AWS_ROLE_NAME: "${{ needs.pre-init.outputs.AWS_ROLE_NAME }}"
+      AWS_ACCOUNT_ID: "${{ needs.pre-init.outputs.AWS_ACCOUNT_ID }}"
+      REGISTRY_NAME: "${{ matrix.service.registry_name }}"
+      PLATFORMS: "linux/amd64"
+      DOCKERFILE_PATH: ${{ matrix.service.dockerfile }}
+
+  Deploy:
+    needs:
+      - pre-init
+      - Build
+    uses: intergi/WORKFLOWS/.github/workflows/k8-service-deploy.yaml@main
+    with:
+      GIT_REF: "${{ needs.pre-init.outputs.GIT_REF }}"
+      ENV: ${{ needs.pre-init.outputs.ENV_NAME }}
+      SERVICE_NAME: ${{ needs.pre-init.outputs.SERVICE_NAME }}
+    secrets:
+      DESTINATION-REPOSITORY_DEPLOY_KEY: ${{ secrets.K8S_APPS_PUSH_KEY }}
+

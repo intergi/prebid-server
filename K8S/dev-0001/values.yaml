@@ -1,0 +1,48 @@
+metadata:
+  serviceAccount:
+    irsa:
+      roleName: dev-0001-svc-prebid-server
+externalSecret:
+  enabled: true
+
+readinessProbe: null
+livenessProbe: null
+
+ports:
+  - name: http
+    port: 8000
+    protocol: TCP
+  - name: http2
+    port: 6060
+    protocol: TCP
+
+image:
+  registry: 203918842499.dkr.ecr.us-east-1.amazonaws.com
+  repository: prebid-server
+  tag: 0.0.1
+
+env:
+  PBS_ADAPTERS_IX_DISABLED: "false"
+  PBS_ADAPTERS_IX_ENDPOINT: "https://playwire-us-east.lb.indexww.com/pbs?p=209857"
+  PBS_ADAPTERS_RUBICON_DISABLED: "false"
+  PBS_ADAPTERS_RUBICON_USERSYNC_URL: "https://secure-assets.rubiconproject.com/utils/xapi/multi-sync.html?p=pbs-Playwire&gdpr={{.GDPR}}&gdpr_consent={{.GDPRConsent}}&us_privacy={{.USPrivacy}}"
+  PBS_ADAPTERS_RUBICON_XAPI_USERNAME: "pb_playwire"
+  PBS_CACHE_HOST: "prebid.adnxs.com/pbc/v1"
+  PBS_CACHE_SCHEME: "https"
+  PBS_EXTERNAL_CACHE_HOST: "prebid.adnxs.com"
+  PBS_EXTERNAL_CACHE_PATH: "/pbc/v1/cache"
+  PBS_EXTERNAL_CACHE_SCHEME: "https"
+  PBS_GDPR_DEFAULT_VALUE: "0"
+  PBS_STORED_REQUESTS_HTTP_ENDPOINT: "https://config-staging.playwire.com/prebid"
+  PBS_STORED_REQUESTS_IN_MEMORY_CACHE_IMP_CACHE_SIZE_BYTES: "26214400"
+  PBS_STORED_REQUESTS_IN_MEMORY_CACHE_REQUEST_CACHE_SIZE_BYTES: "26214400"
+  PBS_STORED_REQUESTS_IN_MEMORY_CACHE_RESP_CACHE_SIZE_BYTES: "5242880"
+  PBS_STORED_REQUESTS_IN_MEMORY_CACHE_TTL_SECONDS: "60"
+  PBS_STORED_REQUESTS_IN_MEMORY_CACHE_TYPE: "lru"
+  PBS_STORED_REQUESTS_TIMEOUT_MS: "200"
+  PBS_USER_SYNC_EXTERNAL_URL: "https://prebid.dev-aws.playwire.com"
+
+ingress:
+  host: prebid.dev-aws.playwire.com
+  path: /
+  pathType: Prefix
