@@ -388,6 +388,8 @@ func sendAuctionResponse(
 	// Exitpoint will modify the response and set response headers according to hook implementation.
 	finalResponse := hookExecutor.ExecuteExitpointStage(response, w)
 
+	logDebugAuction(request, finalResponse)
+
 	// If an error happens when encoding the response, there isn't much we can do.
 	// If we've sent _any_ bytes, then Go would have sent the 200 status code first.
 	// That status code can't be un-sent... so the best we can do is log the error.
@@ -397,6 +399,27 @@ func sendAuctionResponse(
 	}
 
 	return labels, ao
+}
+
+// logDebugAuction is TEMP logging: when the request has ext.prebid.debug=true, it logs the
+// resolved request and the final response as JSON, one line each, keyed by request id.
+func logDebugAuction(request *openrtb2.BidRequest, response any) {
+	if request == nil {
+		return
+	}
+	if debug, err := jsonparser.GetBoolean(request.Ext, "prebid", "debug"); err != nil || !debug {
+		return
+	}
+	if reqJSON, err := jsonutil.Marshal(request); err == nil {
+		logger.Infof("auction request %s: %s", request.ID, reqJSON)
+	} else {
+		logger.Errorf("auction request %s: failed to marshal: %v", request.ID, err)
+	}
+	if respJSON, err := jsonutil.Marshal(response); err == nil {
+		logger.Infof("auction response %s: %s", request.ID, respJSON)
+	} else {
+		logger.Errorf("auction response %s: failed to marshal: %v", request.ID, err)
+	}
 }
 
 // setBrowsingTopicsHeader always set the Observe-Browsing-Topics header to a value of ?1 if the Sec-Browsing-Topics is present in request
