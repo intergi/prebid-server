@@ -557,6 +557,15 @@ func (deps *endpointDeps) parseRequest(httpRequest *http.Request, labels *metric
 		return
 	}
 
+	// Allow debug to be enabled via the 'pbs_debug=1' query param, equivalent to setting
+	// ext.prebid.debug=true in the request body. Still subject to the account's debug_allow setting.
+	if httpRequest.URL.Query().Get("pbs_debug") == "1" {
+		if err := setRequestDebug(req); err != nil {
+			errs = []error{err}
+			return
+		}
+	}
+
 	// Populate any "missing" OpenRTB fields with info from other sources, (e.g. HTTP request headers).
 	if errsL := deps.setFieldsImplicitly(httpRequest, req, account); len(errsL) > 0 {
 		errs = append(errs, errsL...)
@@ -588,6 +597,21 @@ func (deps *endpointDeps) parseRequest(httpRequest *http.Request, labels *metric
 	}
 
 	return
+}
+
+// setRequestDebug sets ext.prebid.debug=true on the request.
+func setRequestDebug(req *openrtb_ext.RequestWrapper) error {
+	reqExt, err := req.GetRequestExt()
+	if err != nil {
+		return err
+	}
+	prebid := reqExt.GetPrebid()
+	if prebid == nil {
+		prebid = &openrtb_ext.ExtRequestPrebid{}
+	}
+	prebid.Debug = true
+	reqExt.SetPrebid(prebid)
+	return nil
 }
 
 func getCompressionEnabledReader(body io.ReadCloser, contentEncoding httputil.ContentEncoding) (io.ReadCloser, error) {
