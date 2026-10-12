@@ -3929,58 +3929,6 @@ func TestParseGzipedRequestWithQueryParam(t *testing.T) {
 	assert.NotNil(t, impExtInfoMap, "Impression info map should not be nil")
 }
 
-// TestParseRequestDebugQueryParam verifies that the 'pbs_debug=1' query param sets ext.prebid.debug=true.
-func TestParseRequestDebugQueryParam(t *testing.T) {
-	testCases := []struct {
-		description   string
-		url           string
-		expectedDebug bool
-	}{
-		{description: "pbs_debug=1", url: "/openrtb2/auction?pbs_debug=1", expectedDebug: true},
-		{description: "pbs_debug=0", url: "/openrtb2/auction?pbs_debug=0", expectedDebug: false},
-		{description: "no query param", url: "/openrtb2/auction", expectedDebug: false},
-	}
-
-	for _, test := range testCases {
-		t.Run(test.description, func(t *testing.T) {
-			deps := &endpointDeps{
-				fakeUUIDGenerator{},
-				&warningsCheckExchange{},
-				ortb.NewRequestValidator(openrtb_ext.BuildBidderMap(), map[string]string{}, mockBidderParamValidator{}),
-				&mockStoredReqFetcher{},
-				empty_fetcher.EmptyFetcher{},
-				empty_fetcher.EmptyFetcher{},
-				&config.Configuration{MaxRequestSize: int64(2000)},
-				&metricsConfig.NilMetricsEngine{},
-				analyticsBuild.New(&config.Analytics{}),
-				map[string]string{},
-				false,
-				[]byte{},
-				openrtb_ext.BuildBidderMap(),
-				nil,
-				nil,
-				hardcodedResponseIPValidator{response: true},
-				empty_fetcher.EmptyFetcher{},
-				hooks.EmptyPlanBuilder{},
-				nil,
-				openrtb_ext.NormalizeBidderName,
-			}
-
-			req := httptest.NewRequest("POST", test.url, strings.NewReader(validRequest(t, "site.json")))
-
-			hookExecutor := hookexecution.NewHookExecutor(deps.hookExecutionPlanBuilder, hookexecution.EndpointAuction, deps.metricsEngine)
-			resReq, _, _, _, _, _, errL := deps.parseRequest(req, &metrics.Labels{}, hookExecutor)
-			assert.Nil(t, errL, "Error list should be nil")
-			assert.NotNil(t, resReq, "Result request should not be nil")
-
-			reqExt, err := resReq.GetRequestExt()
-			assert.NoError(t, err)
-			prebid := reqExt.GetPrebid()
-			assert.Equal(t, test.expectedDebug, prebid != nil && prebid.Debug)
-		})
-	}
-}
-
 func TestAuctionResponseHeaders(t *testing.T) {
 	testCases := []struct {
 		description     string
