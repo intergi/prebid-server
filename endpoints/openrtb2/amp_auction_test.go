@@ -19,23 +19,23 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/prebid/prebid-server/v3/adapters"
-	"github.com/prebid/prebid-server/v3/amp"
-	"github.com/prebid/prebid-server/v3/analytics"
-	analyticsBuild "github.com/prebid/prebid-server/v3/analytics/build"
-	"github.com/prebid/prebid-server/v3/config"
-	"github.com/prebid/prebid-server/v3/errortypes"
-	"github.com/prebid/prebid-server/v3/exchange"
-	"github.com/prebid/prebid-server/v3/hooks"
-	"github.com/prebid/prebid-server/v3/hooks/hookexecution"
-	"github.com/prebid/prebid-server/v3/hooks/hookstage"
-	"github.com/prebid/prebid-server/v3/metrics"
-	metricsConfig "github.com/prebid/prebid-server/v3/metrics/config"
-	"github.com/prebid/prebid-server/v3/openrtb_ext"
-	"github.com/prebid/prebid-server/v3/ortb"
-	"github.com/prebid/prebid-server/v3/privacy"
-	"github.com/prebid/prebid-server/v3/stored_requests/backends/empty_fetcher"
-	"github.com/prebid/prebid-server/v3/util/jsonutil"
+	"github.com/prebid/prebid-server/v4/adapters"
+	"github.com/prebid/prebid-server/v4/amp"
+	"github.com/prebid/prebid-server/v4/analytics"
+	analyticsBuild "github.com/prebid/prebid-server/v4/analytics/build"
+	"github.com/prebid/prebid-server/v4/config"
+	"github.com/prebid/prebid-server/v4/errortypes"
+	"github.com/prebid/prebid-server/v4/exchange"
+	"github.com/prebid/prebid-server/v4/hooks"
+	"github.com/prebid/prebid-server/v4/hooks/hookexecution"
+	"github.com/prebid/prebid-server/v4/hooks/hookstage"
+	"github.com/prebid/prebid-server/v4/metrics"
+	metricsConfig "github.com/prebid/prebid-server/v4/metrics/config"
+	"github.com/prebid/prebid-server/v4/openrtb_ext"
+	"github.com/prebid/prebid-server/v4/ortb"
+	"github.com/prebid/prebid-server/v4/privacy"
+	"github.com/prebid/prebid-server/v4/stored_requests/backends/empty_fetcher"
+	"github.com/prebid/prebid-server/v4/util/jsonutil"
 )
 
 // TestGoodRequests makes sure that the auction runs properly-formatted stored bids correctly.
@@ -395,6 +395,8 @@ func TestOverrideWithParams(t *testing.T) {
 		errorMsgs         []string
 		expectFatalErrors bool
 	}
+	gdprApplies := true
+	timeout := uint64(500)
 	testCases := []struct {
 		desc     string
 		given    testInput
@@ -542,6 +544,86 @@ func TestOverrideWithParams(t *testing.T) {
 					Site: &openrtb2.Site{Ext: json.RawMessage(`{"amp":1}`)},
 				},
 				errorMsgs: []string{"unable to merge imp.ext with targeting data, check targeting data is correct: Invalid JSON Patch"},
+			},
+		},
+		{
+			desc: "amp.Params with valid CCPA consent and gdpr_applies true - expect consent warning and remaining overrides applied",
+			given: testInput{
+				ampParams: amp.Params{
+					Consent:     "1YNN",
+					ConsentType: amp.ConsentUSPrivacy,
+					GdprApplies: &gdprApplies,
+					Targeting:   `{"foo":"bar"}`,
+					Timeout:     &timeout,
+					Trace:       "verbose",
+				},
+				bidRequest: &openrtb2.BidRequest{
+					Imp: []openrtb2.Imp{{Banner: &openrtb2.Banner{Format: []openrtb2.Format{}}}},
+				},
+			},
+			expected: testOutput{
+				bidRequest: &openrtb2.BidRequest{
+					Imp: []openrtb2.Imp{{
+						Banner: &openrtb2.Banner{Format: []openrtb2.Format{}},
+						Ext:    json.RawMessage(`{"data":{"foo":"bar"}}`),
+					}},
+					Regs: &openrtb2.Regs{USPrivacy: "1YNN"},
+					Site: &openrtb2.Site{Ext: json.RawMessage(`{"amp":1}`)},
+					TMax: 500,
+					Ext:  json.RawMessage(`{"prebid":{"trace":"verbose"}}`),
+				},
+				errorMsgs: []string{"AMP request gdpr_applies value was ignored because provided consent string is a CCPA consent string"},
+			},
+		},
+		{
+			desc: "amp.Params default consent_type with valid CCPA consent and gdpr_applies true - expect consent warning and remaining overrides applied",
+			given: testInput{
+				ampParams: amp.Params{
+					Consent:     "1YNN",
+					GdprApplies: &gdprApplies,
+					Targeting:   `{"foo":"bar"}`,
+					Timeout:     &timeout,
+					Trace:       "verbose",
+				},
+				bidRequest: &openrtb2.BidRequest{
+					Imp: []openrtb2.Imp{{Banner: &openrtb2.Banner{Format: []openrtb2.Format{}}}},
+				},
+			},
+			expected: testOutput{
+				bidRequest: &openrtb2.BidRequest{
+					Imp: []openrtb2.Imp{{
+						Banner: &openrtb2.Banner{Format: []openrtb2.Format{}},
+						Ext:    json.RawMessage(`{"data":{"foo":"bar"}}`),
+					}},
+					Regs: &openrtb2.Regs{USPrivacy: "1YNN"},
+					Site: &openrtb2.Site{Ext: json.RawMessage(`{"amp":1}`)},
+					TMax: 500,
+					Ext:  json.RawMessage(`{"prebid":{"trace":"verbose"}}`),
+				},
+				errorMsgs: []string{"AMP request gdpr_applies value was ignored because provided consent string is a CCPA consent string"},
+			},
+		},
+		{
+			desc: "amp.Params with invalid CCPA consent and gdpr_applies true - expect consent warning and remaining overrides skipped",
+			given: testInput{
+				ampParams: amp.Params{
+					Consent:     "XXXX",
+					ConsentType: amp.ConsentUSPrivacy,
+					GdprApplies: &gdprApplies,
+					Targeting:   `{"foo":"bar"}`,
+					Timeout:     &timeout,
+					Trace:       "verbose",
+				},
+				bidRequest: &openrtb2.BidRequest{
+					Imp: []openrtb2.Imp{{Banner: &openrtb2.Banner{Format: []openrtb2.Format{}}}},
+				},
+			},
+			expected: testOutput{
+				bidRequest: &openrtb2.BidRequest{
+					Imp:  []openrtb2.Imp{{Banner: &openrtb2.Banner{Format: []openrtb2.Format{}}}},
+					Site: &openrtb2.Site{Ext: json.RawMessage(`{"amp":1}`)},
+				},
+				errorMsgs: []string{"Consent string 'XXXX' is not a valid CCPA consent string."},
 			},
 		},
 	}
@@ -2491,7 +2573,7 @@ func TestAmpAuctionDebugWarningsOnly(t *testing.T) {
 	)
 
 	for _, test := range testCases {
-		httpReq := httptest.NewRequest("GET", fmt.Sprintf("/openrtb2/auction/amp"+test.requestURLArguments), nil)
+		httpReq := httptest.NewRequest("GET", "/openrtb2/auction/amp"+test.requestURLArguments, nil)
 		test.addRequestHeaders(httpReq)
 		recorder := httptest.NewRecorder()
 

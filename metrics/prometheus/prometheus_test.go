@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/prebid/prebid-server/v3/config"
-	"github.com/prebid/prebid-server/v3/metrics"
-	"github.com/prebid/prebid-server/v3/openrtb_ext"
+	"github.com/prebid/prebid-server/v4/config"
+	"github.com/prebid/prebid-server/v4/metrics"
+	"github.com/prebid/prebid-server/v4/openrtb_ext"
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
 	"github.com/stretchr/testify/assert"
@@ -1224,6 +1224,46 @@ func TestAccountCacheResultMetric(t *testing.T) {
 		})
 }
 
+func TestV2FetcherMetrics(t *testing.T) {
+	m := createMetricsForTesting()
+
+	m.RecordFetcherResult("account", metrics.FetcherResultHit)
+	m.RecordFetcherResult("account", metrics.FetcherResultHit)
+	m.RecordFetcherResult("account", metrics.FetcherResultMiss)
+	m.RecordFetcherResult("account", metrics.FetcherResultNegative)
+
+	m.RecordFetcherBackendFetch("account", metrics.FetcherOperationGet, metrics.FetcherBackendOK, time.Millisecond)
+	m.RecordFetcherBackendFetch("account", metrics.FetcherOperationStart, metrics.FetcherBackendNotFound, time.Millisecond)
+
+	assertCounterVecValue(t, "", "fetcherResult:hit", m.FetcherResult, 2,
+		prometheus.Labels{
+			subsystemLabel:     "account",
+			FetcherResultLabel: string(metrics.FetcherResultHit),
+		})
+	assertCounterVecValue(t, "", "fetcherResult:miss", m.FetcherResult, 1,
+		prometheus.Labels{
+			subsystemLabel:     "account",
+			FetcherResultLabel: string(metrics.FetcherResultMiss),
+		})
+	assertCounterVecValue(t, "", "fetcherResult:negative", m.FetcherResult, 1,
+		prometheus.Labels{
+			subsystemLabel:     "account",
+			FetcherResultLabel: string(metrics.FetcherResultNegative),
+		})
+	assertCounterVecValue(t, "", "fetcherBackendFetch:ok", m.fetcherBackendFetch, 1,
+		prometheus.Labels{
+			subsystemLabel:     "account",
+			operationLabel:     string(metrics.FetcherOperationGet),
+			FetcherResultLabel: string(metrics.FetcherBackendOK),
+		})
+	assertCounterVecValue(t, "", "fetcherBackendFetch:notfound", m.fetcherBackendFetch, 1,
+		prometheus.Labels{
+			subsystemLabel:     "account",
+			operationLabel:     string(metrics.FetcherOperationStart),
+			FetcherResultLabel: string(metrics.FetcherBackendNotFound),
+		})
+}
+
 func TestCookieSyncMetric(t *testing.T) {
 	tests := []struct {
 		status metrics.CookieSyncStatus
@@ -1951,6 +1991,26 @@ func TestRecordGvlListRequest(t *testing.T) {
 	m.RecordGvlListRequest()
 
 	assertCounterValue(t, "Record instance of fetched GVL list", "success", m.gvlListRequests, 1.00)
+}
+
+func TestRecordLiveGVLFetch(t *testing.T) {
+	m := createMetricsForTesting()
+
+	m.RecordLiveGVLFetch(true)
+	m.RecordLiveGVLFetch(true)
+	m.RecordLiveGVLFetch(false)
+
+	assertCounterVecValue(t, "", "live_gvl_fetch:ok", m.liveGVLFetch,
+		float64(2),
+		prometheus.Labels{
+			successLabel: requestSuccessful,
+		})
+
+	assertCounterVecValue(t, "", "live_gvl_fetch:fail", m.liveGVLFetch,
+		float64(1),
+		prometheus.Labels{
+			successLabel: requestFailed,
+		})
 }
 
 func TestRecordAdsCertReqMetric(t *testing.T) {

@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 
 	"github.com/lib/pq"
-	"github.com/prebid/prebid-server/v3/logger"
-	"github.com/prebid/prebid-server/v3/stored_requests"
-	"github.com/prebid/prebid-server/v3/stored_requests/backends/db_provider"
+	"github.com/prebid/prebid-server/v4/logger"
+	"github.com/prebid/prebid-server/v4/stored_requests"
+	"github.com/prebid/prebid-server/v4/stored_requests/backends/db_provider"
 )
 
 func NewFetcher(
@@ -15,7 +15,6 @@ func NewFetcher(
 	queryTemplate string,
 	responseQueryTemplate string,
 ) stored_requests.AllFetcher {
-
 	if provider == nil {
 		logger.Fatalf("The Database Stored Request Fetcher requires a database connection. Please report this as a bug.")
 	}

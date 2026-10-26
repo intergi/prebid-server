@@ -15,29 +15,29 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/prebid/openrtb/v20/openrtb2"
 	"github.com/prebid/openrtb/v20/openrtb3"
-	"github.com/prebid/prebid-server/v3/hooks/hookexecution"
-	"github.com/prebid/prebid-server/v3/ortb"
-	"github.com/prebid/prebid-server/v3/util/uuidutil"
+	"github.com/prebid/prebid-server/v4/hooks/hookexecution"
+	"github.com/prebid/prebid-server/v4/ortb"
+	"github.com/prebid/prebid-server/v4/util/uuidutil"
 	jsonpatch "gopkg.in/evanphx/json-patch.v5"
 
-	accountService "github.com/prebid/prebid-server/v3/account"
-	"github.com/prebid/prebid-server/v3/amp"
-	"github.com/prebid/prebid-server/v3/analytics"
-	"github.com/prebid/prebid-server/v3/config"
-	"github.com/prebid/prebid-server/v3/errortypes"
-	"github.com/prebid/prebid-server/v3/exchange"
-	"github.com/prebid/prebid-server/v3/hooks"
-	"github.com/prebid/prebid-server/v3/logger"
-	"github.com/prebid/prebid-server/v3/metrics"
-	"github.com/prebid/prebid-server/v3/openrtb_ext"
-	"github.com/prebid/prebid-server/v3/privacy"
-	"github.com/prebid/prebid-server/v3/stored_requests"
-	"github.com/prebid/prebid-server/v3/stored_requests/backends/empty_fetcher"
-	"github.com/prebid/prebid-server/v3/stored_responses"
-	"github.com/prebid/prebid-server/v3/usersync"
-	"github.com/prebid/prebid-server/v3/util/iputil"
-	"github.com/prebid/prebid-server/v3/util/jsonutil"
-	"github.com/prebid/prebid-server/v3/version"
+	accountService "github.com/prebid/prebid-server/v4/account"
+	"github.com/prebid/prebid-server/v4/amp"
+	"github.com/prebid/prebid-server/v4/analytics"
+	"github.com/prebid/prebid-server/v4/config"
+	"github.com/prebid/prebid-server/v4/errortypes"
+	"github.com/prebid/prebid-server/v4/exchange"
+	"github.com/prebid/prebid-server/v4/hooks"
+	"github.com/prebid/prebid-server/v4/logger"
+	"github.com/prebid/prebid-server/v4/metrics"
+	"github.com/prebid/prebid-server/v4/openrtb_ext"
+	"github.com/prebid/prebid-server/v4/privacy"
+	"github.com/prebid/prebid-server/v4/stored_requests"
+	"github.com/prebid/prebid-server/v4/stored_requests/backends/empty_fetcher"
+	"github.com/prebid/prebid-server/v4/stored_responses"
+	"github.com/prebid/prebid-server/v4/usersync"
+	"github.com/prebid/prebid-server/v4/util/iputil"
+	"github.com/prebid/prebid-server/v4/util/jsonutil"
+	"github.com/prebid/prebid-server/v4/version"
 )
 
 const defaultAmpRequestTimeoutMillis = 900
@@ -209,7 +209,7 @@ func (deps *endpointDeps) AmpAuction(w http.ResponseWriter, r *http.Request, _ h
 		for _, er := range errL {
 			errCode := errortypes.ReadCode(er)
 			if errCode == errortypes.BlockedAppErrorCode || errCode == errortypes.AccountDisabledErrorCode {
-				httpStatus = http.StatusServiceUnavailable
+				httpStatus = http.StatusForbidden
 				metricsStatus = metrics.RequestStatusBlockedApp
 				break
 			}
@@ -651,9 +651,13 @@ func (deps *endpointDeps) overrideWithParams(ampParams amp.Params, req *openrtb2
 		return []error{err}
 	}
 
-	policyWriter, policyWriterErr := amp.ReadPolicy(ampParams, deps.cfg.GDPR.Enabled)
+	policyWriter, policyWriterErr, policyWriterValid := amp.ReadPolicy(ampParams, deps.cfg.GDPR.Enabled)
+	var errors []error
 	if policyWriterErr != nil {
-		return []error{policyWriterErr}
+		errors = append(errors, policyWriterErr)
+		if !policyWriterValid {
+			return errors
+		}
 	}
 	if err := policyWriter.Write(req); err != nil {
 		return []error{err}
@@ -663,7 +667,6 @@ func (deps *endpointDeps) overrideWithParams(ampParams amp.Params, req *openrtb2
 		req.TMax = int64(*ampParams.Timeout) - deps.cfg.AMPTimeoutAdjustment
 	}
 
-	var errors []error
 	if warn := setTargeting(req, ampParams.Targeting); warn != nil {
 		errors = append(errors, warn)
 	}
