@@ -9,9 +9,9 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/prebid/prebid-server/v3/logger"
-	"github.com/prebid/prebid-server/v3/stored_requests"
-	"github.com/prebid/prebid-server/v3/util/jsonutil"
+	"github.com/prebid/prebid-server/v4/logger"
+	"github.com/prebid/prebid-server/v4/stored_requests"
+	"github.com/prebid/prebid-server/v4/util/jsonutil"
 	"golang.org/x/net/context/ctxhttp"
 	jsonpatch "gopkg.in/evanphx/json-patch.v5"
 )
@@ -148,6 +148,16 @@ func (fetcher *HttpFetcher) FetchAccounts(ctx context.Context, accountIDs []stri
 		return nil, []error{
 			fmt.Errorf(`Error fetching accounts %v via http: error reading response: %v`, accountIDs, err),
 		}
+	}
+	if httpResp.StatusCode == http.StatusNotFound {
+		errs := make([]error, 0, len(accountIDs))
+		for _, accountID := range accountIDs {
+			errs = append(errs, stored_requests.NotFoundError{
+				ID:       accountID,
+				DataType: "Account",
+			})
+		}
+		return nil, errs
 	}
 	if httpResp.StatusCode != http.StatusOK {
 		return nil, []error{

@@ -3,10 +3,10 @@ package config
 import (
 	"time"
 
-	"github.com/prebid/prebid-server/v3/config"
-	"github.com/prebid/prebid-server/v3/metrics"
-	prometheusmetrics "github.com/prebid/prebid-server/v3/metrics/prometheus"
-	"github.com/prebid/prebid-server/v3/openrtb_ext"
+	"github.com/prebid/prebid-server/v4/config"
+	"github.com/prebid/prebid-server/v4/metrics"
+	prometheusmetrics "github.com/prebid/prebid-server/v4/metrics/prometheus"
+	"github.com/prebid/prebid-server/v4/openrtb_ext"
 	gometrics "github.com/rcrowley/go-metrics"
 	influxdb "github.com/vrischmann/go-metrics-influxdb"
 )
@@ -238,6 +238,20 @@ func (me *MultiMetricsEngine) RecordAccountCacheResult(cacheResult metrics.Cache
 	}
 }
 
+// RecordFetcherResult across all engines
+func (me *MultiMetricsEngine) RecordFetcherResult(subsystem string, result metrics.FetcherResult) {
+	for _, thisME := range *me {
+		thisME.RecordFetcherResult(subsystem, result)
+	}
+}
+
+// RecordFetcherBackendFetch across all engines
+func (me *MultiMetricsEngine) RecordFetcherBackendFetch(subsystem string, operation metrics.FetcherOperation, result metrics.FetcherBackendResult, length time.Duration) {
+	for _, thisME := range *me {
+		thisME.RecordFetcherBackendFetch(subsystem, operation, result, length)
+	}
+}
+
 // RecordPrebidCacheRequestTime across all engines
 func (me *MultiMetricsEngine) RecordPrebidCacheRequestTime(success bool, length time.Duration) {
 	for _, thisME := range *me {
@@ -296,6 +310,12 @@ func (me *MultiMetricsEngine) RecordStoredResponse(pubId string) {
 func (me *MultiMetricsEngine) RecordGvlListRequest() {
 	for _, thisME := range *me {
 		thisME.RecordGvlListRequest()
+	}
+}
+
+func (me *MultiMetricsEngine) RecordLiveGVLFetch(success bool) {
+	for _, thisME := range *me {
+		thisME.RecordLiveGVLFetch(success)
 	}
 }
 
@@ -500,6 +520,14 @@ func (me *NilMetricsEngine) RecordStoredImpCacheResult(cacheResult metrics.Cache
 func (me *NilMetricsEngine) RecordAccountCacheResult(cacheResult metrics.CacheResult, inc int) {
 }
 
+// RecordFetcherResult as a noop
+func (me *NilMetricsEngine) RecordFetcherResult(subsystem string, result metrics.FetcherResult) {
+}
+
+// RecordFetcherBackendFetch as a noop
+func (me *NilMetricsEngine) RecordFetcherBackendFetch(subsystem string, operation metrics.FetcherOperation, result metrics.FetcherBackendResult, length time.Duration) {
+}
+
 // RecordPrebidCacheRequestTime as a noop
 func (me *NilMetricsEngine) RecordPrebidCacheRequestTime(success bool, length time.Duration) {
 }
@@ -532,6 +560,9 @@ func (me *NilMetricsEngine) RecordStoredResponse(pubId string) {
 }
 
 func (me *NilMetricsEngine) RecordGvlListRequest() {
+}
+
+func (me *NilMetricsEngine) RecordLiveGVLFetch(success bool) {
 }
 
 func (me *NilMetricsEngine) RecordAdsCertReq(success bool) {

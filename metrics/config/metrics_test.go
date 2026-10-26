@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	mainConfig "github.com/prebid/prebid-server/v3/config"
-	"github.com/prebid/prebid-server/v3/metrics"
-	"github.com/prebid/prebid-server/v3/openrtb_ext"
+	mainConfig "github.com/prebid/prebid-server/v4/config"
+	"github.com/prebid/prebid-server/v4/metrics"
+	"github.com/prebid/prebid-server/v4/openrtb_ext"
 
 	gometrics "github.com/rcrowley/go-metrics"
 )
@@ -206,6 +206,33 @@ func TestMultiMetricsEngine(t *testing.T) {
 			VerifyMetrics(t, fmt.Sprintf("ModuleMetrics.%s.%s.Timeout", module, stage), goEngine.ModuleMetrics[module][stage].TimeoutCounter.Count(), 1)
 		}
 	}
+}
+
+func TestV2MultiMetricsEngineForwardsFetcherMetrics(t *testing.T) {
+	first := &metrics.MetricsEngineMock{}
+	second := &metrics.MetricsEngineMock{}
+	engines := MultiMetricsEngine{first, second}
+	for _, engine := range []*metrics.MetricsEngineMock{first, second} {
+		engine.Mock.On("RecordFetcherResult", "account", metrics.FetcherResultHit).Once()
+		engine.Mock.On(
+			"RecordFetcherBackendFetch",
+			"account",
+			metrics.FetcherOperationGet,
+			metrics.FetcherBackendOK,
+			time.Millisecond,
+		).Once()
+	}
+
+	engines.RecordFetcherResult("account", metrics.FetcherResultHit)
+	engines.RecordFetcherBackendFetch(
+		"account",
+		metrics.FetcherOperationGet,
+		metrics.FetcherBackendOK,
+		time.Millisecond,
+	)
+
+	first.AssertExpectations(t)
+	second.AssertExpectations(t)
 }
 
 func VerifyMetrics(t *testing.T, name string, actual int64, expected int64) {

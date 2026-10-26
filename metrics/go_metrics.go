@@ -6,9 +6,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/prebid/prebid-server/v3/config"
-	"github.com/prebid/prebid-server/v3/logger"
-	"github.com/prebid/prebid-server/v3/openrtb_ext"
+	"github.com/prebid/prebid-server/v4/config"
+	"github.com/prebid/prebid-server/v4/logger"
+	"github.com/prebid/prebid-server/v4/openrtb_ext"
 	metrics "github.com/rcrowley/go-metrics"
 )
 
@@ -36,6 +36,8 @@ type Metrics struct {
 	BidderServerResponseTimer      metrics.Timer
 	StoredResponsesMeter           metrics.Meter
 	GvlListRequestsMeter           metrics.Meter
+	LiveGVLFetchSuccess            metrics.Meter
+	LiveGVLFetchFailure            metrics.Meter
 
 	// Metrics for OpenRTB requests specifically
 	RequestStatuses       map[RequestType]map[RequestStatus]metrics.Meter
@@ -188,6 +190,8 @@ func NewBlankMetrics(registry metrics.Registry, exchanges []string, disabledMetr
 		SyncerSetsMeter:                make(map[string]map[SyncerSetUidStatus]metrics.Meter),
 		StoredResponsesMeter:           blankMeter,
 		GvlListRequestsMeter:           blankMeter,
+		LiveGVLFetchSuccess:            blankMeter,
+		LiveGVLFetchFailure:            blankMeter,
 
 		ImpsTypeBanner: blankMeter,
 		ImpsTypeVideo:  blankMeter,
@@ -314,6 +318,8 @@ func NewMetrics(registry metrics.Registry, exchanges []openrtb_ext.BidderName, d
 	newMetrics.PrebidCacheRequestTimerError = metrics.GetOrRegisterTimer("prebid_cache_request_time.err", registry)
 	newMetrics.StoredResponsesMeter = metrics.GetOrRegisterMeter("stored_responses", registry)
 	newMetrics.GvlListRequestsMeter = metrics.GetOrRegisterMeter("gvl_requests", registry)
+	newMetrics.LiveGVLFetchSuccess = metrics.GetOrRegisterMeter("live_gvl_fetch.ok", registry)
+	newMetrics.LiveGVLFetchFailure = metrics.GetOrRegisterMeter("live_gvl_fetch.failed", registry)
 	newMetrics.OverheadTimer = makeOverheadTimerMetrics(registry)
 	newMetrics.BidderServerResponseTimer = metrics.GetOrRegisterTimer("bidder_server_response_time_seconds", registry)
 
@@ -658,6 +664,14 @@ func (me *Metrics) RecordGvlListRequest() {
 	me.GvlListRequestsMeter.Mark(1)
 }
 
+func (me *Metrics) RecordLiveGVLFetch(success bool) {
+	if success {
+		me.LiveGVLFetchSuccess.Mark(1)
+	} else {
+		me.LiveGVLFetchFailure.Mark(1)
+	}
+}
+
 func (me *Metrics) RecordImps(labels ImpLabels) {
 	me.ImpMeter.Mark(int64(1))
 	if labels.BannerImps {
@@ -921,6 +935,14 @@ func (me *Metrics) RecordStoredImpCacheResult(cacheResult CacheResult, inc int) 
 // cache hits and misses when looking up accounts.
 func (me *Metrics) RecordAccountCacheResult(cacheResult CacheResult, inc int) {
 	me.AccountCacheMeter[cacheResult].Mark(int64(inc))
+}
+
+// RecordFetcherResult is not tracked by the influx/go-metrics engine.
+func (me *Metrics) RecordFetcherResult(subsystem string, result FetcherResult) {
+}
+
+// RecordFetcherBackendFetch is not tracked by the influx/go-metrics engine.
+func (me *Metrics) RecordFetcherBackendFetch(subsystem string, operation FetcherOperation, result FetcherBackendResult, length time.Duration) {
 }
 
 // RecordPrebidCacheRequestTime implements a part of the MetricsEngine interface. Records the

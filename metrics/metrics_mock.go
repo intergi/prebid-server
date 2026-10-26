@@ -3,7 +3,7 @@ package metrics
 import (
 	"time"
 
-	"github.com/prebid/prebid-server/v3/openrtb_ext"
+	"github.com/prebid/prebid-server/v4/openrtb_ext"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -136,6 +136,14 @@ func (me *MetricsEngineMock) RecordAccountCacheResult(cacheResult CacheResult, i
 	me.Called(cacheResult, inc)
 }
 
+func (me *MetricsEngineMock) RecordFetcherResult(subsystem string, result FetcherResult) {
+	me.Called(subsystem, result)
+}
+
+func (me *MetricsEngineMock) RecordFetcherBackendFetch(subsystem string, operation FetcherOperation, result FetcherBackendResult, length time.Duration) {
+	me.Called(subsystem, operation, result, length)
+}
+
 // RecordPrebidCacheRequestTime mock
 func (me *MetricsEngineMock) RecordPrebidCacheRequestTime(success bool, length time.Duration) {
 	me.Called(success, length)
@@ -177,6 +185,10 @@ func (me *MetricsEngineMock) RecordStoredResponse(pubId string) {
 
 func (me *MetricsEngineMock) RecordGvlListRequest() {
 	me.Called()
+}
+
+func (me *MetricsEngineMock) RecordLiveGVLFetch(success bool) {
+	me.Called(success)
 }
 
 func (me *MetricsEngineMock) RecordAdsCertReq(success bool) {

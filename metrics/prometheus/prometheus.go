@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/prebid/prebid-server/v3/config"
-	"github.com/prebid/prebid-server/v3/metrics"
-	"github.com/prebid/prebid-server/v3/openrtb_ext"
+	"github.com/prebid/prebid-server/v4/config"
+	"github.com/prebid/prebid-server/v4/metrics"
+	"github.com/prebid/prebid-server/v4/openrtb_ext"
 	"github.com/prometheus/client_golang/prometheus"
 	promCollector "github.com/prometheus/client_golang/prometheus/collectors"
 )
@@ -55,11 +55,17 @@ type Metrics struct {
 	privacyTCF                   *prometheus.CounterVec
 	storedResponses              prometheus.Counter
 	gvlListRequests              prometheus.Counter
+	liveGVLFetch                 *prometheus.CounterVec
 	storedResponsesFetchTimer    *prometheus.HistogramVec
 	storedResponsesErrors        *prometheus.CounterVec
 	adsCertRequests              *prometheus.CounterVec
 	adsCertSignTimer             prometheus.Histogram
 	bidderServerResponseTimer    prometheus.Histogram
+
+	// Fetchers 2.0 (fetcher) Metrics
+	FetcherResult            *prometheus.CounterVec
+	fetcherBackendFetch      *prometheus.CounterVec
+	fetcherBackendFetchTimer *prometheus.HistogramVec
 
 	// Adapter Metrics
 	adapterBids                           *prometheus.CounterVec
@@ -115,12 +121,14 @@ const (
 	adapterLabel         = "adapter"
 	bidTypeLabel         = "bid_type"
 	cacheResultLabel     = "cache_result"
+	FetcherResultLabel   = "result"
 	connectionErrorLabel = "connection_error"
 	cookieLabel          = "cookie"
 	hasBidsLabel         = "has_bids"
 	isAudioLabel         = "audio"
 	isBannerLabel        = "banner"
 	isNativeLabel        = "native"
+	operationLabel       = "operation"
 	isVideoLabel         = "video"
 	markupDeliveryLabel  = "delivery"
 	optOutLabel          = "opt_out"
@@ -132,6 +140,7 @@ const (
 	stageLabel           = "stage"
 	statusLabel          = "status"
 	successLabel         = "success"
+	subsystemLabel       = "subsystem"
 	syncerLabel          = "syncer"
 	versionLabel         = "version"
 )
@@ -268,6 +277,22 @@ func NewMetrics(cfg config.PrometheusMetrics, disabledMetrics config.DisabledMet
 		"Count of stored account errors by error type",
 		[]string{storedDataErrorLabel})
 
+	metrics.FetcherResult = newCounter(cfg, reg,
+		"fetcher_cache_result",
+		"Count of Fetchers 2.0 cache lookups labeled by subsystem and result (hit, miss, negative).",
+		[]string{subsystemLabel, FetcherResultLabel})
+
+	metrics.fetcherBackendFetch = newCounter(cfg, reg,
+		"fetcher_backend_fetch",
+		"Count of Fetchers 2.0 backend fetches labeled by subsystem, operation and result (ok, notfound, error).",
+		[]string{subsystemLabel, operationLabel, FetcherResultLabel})
+
+	metrics.fetcherBackendFetchTimer = newHistogramVec(cfg, reg,
+		"fetcher_backend_fetch_duration_seconds",
+		"Seconds to fetch a value from a Fetchers 2.0 backend source, labeled by subsystem and operation.",
+		[]string{subsystemLabel, operationLabel},
+		standardTimeBuckets)
+
 	metrics.storedAMPFetchTimer = newHistogramVec(cfg, reg,
 		"stored_amp_fetch_time_seconds",
 		"Seconds to fetch stored AMP requests labeled by fetch type",
@@ -378,6 +403,11 @@ func NewMetrics(cfg config.PrometheusMetrics, disabledMetrics config.DisabledMet
 	metrics.gvlListRequests = newCounterWithoutLabels(cfg, reg,
 		"gvl_requests",
 		"Count number of times GVL list is fetched")
+
+	metrics.liveGVLFetch = newCounter(cfg, reg,
+		"live_gvl_fetch",
+		"Count of live GVL vendor ID fetches labeled by success or failure.",
+		[]string{successLabel})
 
 	metrics.adapterBids = newCounter(cfg, reg,
 		"adapter_bids",
@@ -739,6 +769,18 @@ func (m *Metrics) RecordGvlListRequest() {
 	m.gvlListRequests.Inc()
 }
 
+func (m *Metrics) RecordLiveGVLFetch(success bool) {
+	if success {
+		m.liveGVLFetch.With(prometheus.Labels{
+			successLabel: requestSuccessful,
+		}).Inc()
+	} else {
+		m.liveGVLFetch.With(prometheus.Labels{
+			successLabel: requestFailed,
+		}).Inc()
+	}
+}
+
 func (m *Metrics) RecordImps(labels metrics.ImpLabels) {
 	m.impressions.With(prometheus.Labels{
 		isBannerLabel: strconv.FormatBool(labels.BannerImps),
@@ -945,6 +987,25 @@ func (m *Metrics) RecordAccountCacheResult(cacheResult metrics.CacheResult, inc 
 	m.accountCacheResult.With(prometheus.Labels{
 		cacheResultLabel: string(cacheResult),
 	}).Add(float64(inc))
+}
+
+func (m *Metrics) RecordFetcherResult(subsystem string, result metrics.FetcherResult) {
+	m.FetcherResult.With(prometheus.Labels{
+		subsystemLabel:     subsystem,
+		FetcherResultLabel: string(result),
+	}).Inc()
+}
+
+func (m *Metrics) RecordFetcherBackendFetch(subsystem string, operation metrics.FetcherOperation, result metrics.FetcherBackendResult, length time.Duration) {
+	m.fetcherBackendFetch.With(prometheus.Labels{
+		subsystemLabel:     subsystem,
+		operationLabel:     string(operation),
+		FetcherResultLabel: string(result),
+	}).Inc()
+	m.fetcherBackendFetchTimer.With(prometheus.Labels{
+		subsystemLabel: subsystem,
+		operationLabel: string(operation),
+	}).Observe(length.Seconds())
 }
 
 func (m *Metrics) RecordPrebidCacheRequestTime(success bool, length time.Duration) {
