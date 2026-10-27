@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/prebid/openrtb/v20/openrtb2"
-	hs "github.com/prebid/prebid-server/v3/hooks/hookstage"
-	"github.com/prebid/prebid-server/v3/openrtb_ext"
-	"github.com/prebid/prebid-server/v3/rules"
+	hs "github.com/prebid/prebid-server/v4/hooks/hookstage"
+	"github.com/prebid/prebid-server/v4/openrtb_ext"
+	"github.com/prebid/prebid-server/v4/rules"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,8 +19,10 @@ func TestExecuteRulesFullConfig(t *testing.T) {
 		ChangeSet: hs.ChangeSet[hs.ProcessedAuctionRequestPayload]{},
 	}
 	result := ProcessedAuctionHookResult{
-		HookResult:     hookResult,
-		AllowedBidders: make(map[string]struct{}),
+		HookResult: hookResult,
+		IncludeBidders: includeBiddersState{
+			allowedBidders: make(map[string]struct{}),
+		},
 	}
 
 	err := rules.Run(rw, &result)
