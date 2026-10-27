@@ -7,10 +7,10 @@ import (
 	"errors"
 	"time"
 
-	"github.com/prebid/prebid-server/v3/hooks"
-	"github.com/prebid/prebid-server/v3/modules/prebid/rulesengine/config"
-	"github.com/prebid/prebid-server/v3/openrtb_ext"
-	"github.com/prebid/prebid-server/v3/rules"
+	"github.com/prebid/prebid-server/v4/hooks"
+	"github.com/prebid/prebid-server/v4/modules/prebid/rulesengine/config"
+	"github.com/prebid/prebid-server/v4/openrtb_ext"
+	"github.com/prebid/prebid-server/v4/rules"
 )
 
 type hash = string
@@ -106,6 +106,13 @@ func createCacheRuleSet(cfg *config.RuleSet) (cacheRuleSet[openrtb_ext.RequestWr
 			analyticsKey: modelGroup.AnalyticsKey,
 			tree:         *tree,
 		}
+		// Propagate the ruleset name, analytics key and model version onto the tree so they are
+		// available in the ResultFunctionMeta at execution time (e.g. for surfacing them in exclusion
+		// warnings). The ruleset name is used for display; the analytics key stays exactly as
+		// configured (it identifies the model group for analytics).
+		cmg.tree.RulesetName = cfg.Name
+		cmg.tree.AnalyticsKey = modelGroup.AnalyticsKey
+		cmg.tree.ModelVersion = modelGroup.Version
 		crs.modelGroups = append(crs.modelGroups, cmg)
 	}
 

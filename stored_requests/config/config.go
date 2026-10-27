@@ -6,22 +6,22 @@ import (
 	"time"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/prebid/prebid-server/v3/config"
-	"github.com/prebid/prebid-server/v3/logger"
-	"github.com/prebid/prebid-server/v3/metrics"
-	"github.com/prebid/prebid-server/v3/stored_requests"
-	"github.com/prebid/prebid-server/v3/stored_requests/backends/db_fetcher"
-	"github.com/prebid/prebid-server/v3/stored_requests/backends/db_provider"
-	"github.com/prebid/prebid-server/v3/stored_requests/backends/empty_fetcher"
-	"github.com/prebid/prebid-server/v3/stored_requests/backends/file_fetcher"
-	"github.com/prebid/prebid-server/v3/stored_requests/backends/http_fetcher"
-	"github.com/prebid/prebid-server/v3/stored_requests/caches/memory"
-	"github.com/prebid/prebid-server/v3/stored_requests/caches/nil_cache"
-	"github.com/prebid/prebid-server/v3/stored_requests/events"
-	apiEvents "github.com/prebid/prebid-server/v3/stored_requests/events/api"
-	databaseEvents "github.com/prebid/prebid-server/v3/stored_requests/events/database"
-	httpEvents "github.com/prebid/prebid-server/v3/stored_requests/events/http"
-	"github.com/prebid/prebid-server/v3/util/task"
+	"github.com/prebid/prebid-server/v4/config"
+	"github.com/prebid/prebid-server/v4/logger"
+	"github.com/prebid/prebid-server/v4/metrics"
+	"github.com/prebid/prebid-server/v4/stored_requests"
+	"github.com/prebid/prebid-server/v4/stored_requests/backends/db_fetcher"
+	"github.com/prebid/prebid-server/v4/stored_requests/backends/db_provider"
+	"github.com/prebid/prebid-server/v4/stored_requests/backends/empty_fetcher"
+	"github.com/prebid/prebid-server/v4/stored_requests/backends/file_fetcher"
+	"github.com/prebid/prebid-server/v4/stored_requests/backends/http_fetcher"
+	"github.com/prebid/prebid-server/v4/stored_requests/caches/memory"
+	"github.com/prebid/prebid-server/v4/stored_requests/caches/nil_cache"
+	"github.com/prebid/prebid-server/v4/stored_requests/events"
+	apiEvents "github.com/prebid/prebid-server/v4/stored_requests/events/api"
+	databaseEvents "github.com/prebid/prebid-server/v4/stored_requests/events/database"
+	httpEvents "github.com/prebid/prebid-server/v4/stored_requests/events/http"
+	"github.com/prebid/prebid-server/v4/util/task"
 )
 
 // CreateStoredRequests returns three things:
@@ -54,7 +54,7 @@ func CreateStoredRequests(cfg *config.StoredRequests, metricsEngine metrics.Metr
 		}
 	}
 
-	eventProducers := newEventProducers(cfg, client, provider, metricsEngine, router)
+	eventProducers, tickerTasks := newEventProducers(cfg, client, provider, metricsEngine, router)
 	fetcher = newFetcher(cfg, client, provider)
 
 	var shutdown1 func()
@@ -66,6 +66,10 @@ func CreateStoredRequests(cfg *config.StoredRequests, metricsEngine metrics.Metr
 	}
 
 	shutdown = func() {
+		for _, t := range tickerTasks {
+			t.Stop()
+		}
+
 		if shutdown1 != nil {
 			shutdown1()
 		}
@@ -192,7 +196,7 @@ func newCache(cfg *config.StoredRequests) stored_requests.Cache {
 	return cache
 }
 
-func newEventProducers(cfg *config.StoredRequests, client *http.Client, provider db_provider.DbProvider, metricsEngine metrics.MetricsEngine, router *httprouter.Router) (eventProducers []events.EventProducer) {
+func newEventProducers(cfg *config.StoredRequests, client *http.Client, provider db_provider.DbProvider, metricsEngine metrics.MetricsEngine, router *httprouter.Router) (eventProducers []events.EventProducer, tickerTasks []*task.TickerTask) {
 	if cfg.CacheEvents.Enabled {
 		eventProducers = append(eventProducers, newEventsAPI(router, cfg.CacheEvents.Endpoint))
 	}
@@ -214,6 +218,7 @@ func newEventProducers(cfg *config.StoredRequests, client *http.Client, provider
 		dbEventTickerTask := task.NewTickerTask(fetchInterval, dbEventProducer)
 		dbEventTickerTask.Start()
 		eventProducers = append(eventProducers, dbEventProducer)
+		tickerTasks = append(tickerTasks, dbEventTickerTask)
 	}
 	return
 }

@@ -1,7 +1,7 @@
 package rulesengine
 
 import (
-	"github.com/prebid/prebid-server/v3/rules"
+	"github.com/prebid/prebid-server/v4/rules"
 )
 
 // buildBidderConfigRuleSet builds a dynamic ruleset based on the geoscope annotations in the
@@ -25,6 +25,10 @@ func buildBidderConfigRuleSet(geoscopes map[string][]string, setDefinitions map[
 		return nil, err
 	}
 	crs.modelGroups[0].tree = *tree
+	// Propagate the analytics key and model version onto the tree so they are available in the
+	// ResultFunctionMeta at execution time (e.g. for surfacing them in exclusion warnings).
+	crs.modelGroups[0].tree.AnalyticsKey = crs.modelGroups[0].analyticsKey
+	crs.modelGroups[0].tree.ModelVersion = crs.modelGroups[0].version
 
 	return []cacheRuleSet[RequestWrapper, ProcessedAuctionHookResult]{crs}, nil
 }
