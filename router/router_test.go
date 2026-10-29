@@ -45,7 +45,10 @@ func ensureHasKey(t *testing.T, data map[string]json.RawMessage, key string) {
 
 func TestNewJsonDirectoryServer(t *testing.T) {
 	alias := map[openrtb_ext.BidderName]openrtb_ext.BidderName{openrtb_ext.BidderName("alias"): openrtb_ext.BidderName("parentAlias")}
-	handler := newJsonDirectoryServer("../static/bidder-params", &testValidator{}, alias)
+	handler, err := newJsonDirectoryServer("../static/bidder-params", &testValidator{}, alias)
+	if err != nil {
+		t.Fatal(err)
+	}
 	recorder := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/whatever", nil)
 	handler(recorder, request, nil)
@@ -217,7 +220,10 @@ func TestBidderParamsCompactedOutput(t *testing.T) {
 	paramsValidator, err := openrtb_ext.NewBidderParamsValidator(inSchemaDirectory)
 	assert.NoError(t, err, "Error initialing validator")
 
-	handler := newJsonDirectoryServer(inSchemaDirectory, paramsValidator, nil)
+	handler, err := newJsonDirectoryServer(inSchemaDirectory, paramsValidator, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 	recorder := httptest.NewRecorder()
 	request, err := http.NewRequest("GET", "/bidder/params", nil)
 	assert.NoError(t, err, "Error creating request")
