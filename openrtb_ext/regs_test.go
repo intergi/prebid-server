@@ -80,16 +80,16 @@ func TestExtRegsDSAClone(t *testing.T) {
 				assert.Equal(t, tt.extRegsDSA, clone)
 
 				if tt.extRegsDSA.Required != nil {
-					assert.NotSame(t, tt.extRegsDSA.Required, clone.Required)
+					assertNotSameReference(t, tt.extRegsDSA.Required, clone.Required)
 				}
 				if tt.extRegsDSA.PubRender != nil {
-					assert.NotSame(t, tt.extRegsDSA.PubRender, clone.PubRender)
+					assertNotSameReference(t, tt.extRegsDSA.PubRender, clone.PubRender)
 				}
 				if tt.extRegsDSA.DataToPub != nil {
-					assert.NotSame(t, tt.extRegsDSA.DataToPub, clone.DataToPub)
+					assertNotSameReference(t, tt.extRegsDSA.DataToPub, clone.DataToPub)
 				}
 				if tt.extRegsDSA.Transparency != nil {
-					assert.NotSame(t, tt.extRegsDSA.Transparency, clone.Transparency)
+					assertNotSameReference(t, tt.extRegsDSA.Transparency, clone.Transparency)
 				}
 			}
 		})
