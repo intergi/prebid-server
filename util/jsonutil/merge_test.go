@@ -67,7 +67,7 @@ func TestMergeClonePtr(t *testing.T) {
 		require.NoError(t, err)
 
 		require.NotNil(t, imp.ClickBrowser, "clickbrowser-nil")
-		assert.NotSame(t, clickbrowser, imp.ClickBrowser, "clickbrowser-ref")
+		assert.NotSame(t, &clickbrowser, imp.ClickBrowser, "clickbrowser-ref")
 		assert.Equal(t, int8(2), *imp.ClickBrowser, "clickbrowser-val")
 	})
 
@@ -119,7 +119,7 @@ func TestMergeCloneSlice(t *testing.T) {
 		err := MergeClone(imp, []byte(`{"iframeBuster":["b"]}`))
 		require.NoError(t, err)
 
-		assert.NotSame(t, iframeBuster, imp.IframeBuster, "ref")
+		assert.NotSame(t, &iframeBuster[0], &imp.IframeBuster[0], "ref")
 		assert.Equal(t, []string{"a"}, iframeBuster, "original-val")
 		assert.Equal(t, []string{"b"}, imp.IframeBuster, "new-val")
 	})
@@ -133,7 +133,7 @@ func TestMergeCloneSlice(t *testing.T) {
 		err := MergeClone(imp, []byte(`{"iframeBuster":["b", "c"]}`))
 		require.NoError(t, err)
 
-		assert.NotSame(t, iframeBuster, imp.IframeBuster, "ref")
+		assert.NotSame(t, &iframeBuster[0], &imp.IframeBuster[0], "ref")
 		assert.Equal(t, []string{"a"}, iframeBuster, "original-val")
 		assert.Equal(t, []string{"b", "c"}, imp.IframeBuster, "new-val")
 	})
@@ -191,7 +191,6 @@ func TestMergeCloneMap(t *testing.T) {
 		err := MergeClone(test, []byte(`{"foo":null}`))
 		require.NoError(t, err)
 
-		assert.NotSame(t, testMap, test.Foo, "ref")
 		assert.Equal(t, map[string]int{"a": 1, "b": 2}, testMap, "val")
 		assert.Nil(t, test.Foo, "nil")
 	})
@@ -207,7 +206,6 @@ func TestMergeCloneMap(t *testing.T) {
 		err := MergeClone(test, []byte(`{"foo":{"c":3}}`))
 		require.NoError(t, err)
 
-		assert.NotSame(t, testMap, test.Foo)
 		assert.Equal(t, map[string]int{"a": 1, "b": 2}, testMap, "original-val")
 		assert.Equal(t, map[string]int{"a": 1, "b": 2, "c": 3}, test.Foo, "new-val")
 
@@ -228,7 +226,6 @@ func TestMergeCloneMap(t *testing.T) {
 		err := MergeClone(test, []byte(`{"foo":{"3":"c"}}`))
 		require.NoError(t, err)
 
-		assert.NotSame(t, testMap, test.Foo)
 		assert.Equal(t, map[int]string{1: "a", 2: "b"}, testMap, "original-val")
 		assert.Equal(t, map[int]string{1: "a", 2: "b", 3: "c"}, test.Foo, "new-val")
 
@@ -406,8 +403,8 @@ func TestMergeCloneCombinations(t *testing.T) {
 		err := MergeClone(test, []byte(`{"imps":[{"id":"2"}]}`))
 		require.NoError(t, err)
 
-		assert.NotSame(t, impSlice, test.Imps, "slice-ref")
 		require.Len(t, test.Imps, 1, "slice-len")
+		assert.NotSame(t, &impSlice[0], &test.Imps[0], "slice-ref")
 
 		assert.NotSame(t, imp, test.Imps[0], "item-ref")
 		assert.Equal(t, "1", imp.ID, "original-val")
@@ -459,12 +456,13 @@ func TestMergeCloneCombinations(t *testing.T) {
 		err := MergeClone(test, []byte(`{"imps":{"a":{"id":"2"}}}`))
 		require.NoError(t, err)
 
-		assert.NotSame(t, impMap, test.Imps, "map-ref")
 		assert.NotSame(t, imp, test.Imps["a"], "imp-ref")
 
 		assert.Same(t, impMap["a"], imp, "imp-map-ref")
 
 		assert.Equal(t, "1", imp.ID, "original-val")
 		assert.Equal(t, "2", test.Imps["a"].ID, "new-val")
+		delete(test.Imps, "a")
+		assert.Contains(t, impMap, "a", "map-ref")
 	})
 }

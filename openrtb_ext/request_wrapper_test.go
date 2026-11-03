@@ -2412,7 +2412,8 @@ func TestRegExtGetExtSetExt(t *testing.T) {
 
 	regExtJSON = regExt.GetExt()
 	assert.Equal(t, regExtJSON, rawJSON)
-	assert.NotSame(t, regExtJSON, rawJSON)
+	delete(rawJSON, "gdpr")
+	assert.Contains(t, regExtJSON, "gdpr")
 }
 
 func TestRegExtGetDSASetDSA(t *testing.T) {
@@ -2444,7 +2445,6 @@ func TestRegExtGetUSPrivacySetUSPrivacy(t *testing.T) {
 
 	regExtUSPrivacy = regExt.GetUSPrivacy()
 	assert.Equal(t, regExtUSPrivacy, usprivacy)
-	assert.NotSame(t, regExtUSPrivacy, usprivacy)
 }
 
 func TestRegExtGetGDPRSetGDPR(t *testing.T) {

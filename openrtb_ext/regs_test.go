@@ -89,7 +89,9 @@ func TestExtRegsDSAClone(t *testing.T) {
 					assert.NotSame(t, tt.extRegsDSA.DataToPub, clone.DataToPub)
 				}
 				if tt.extRegsDSA.Transparency != nil {
-					assert.NotSame(t, tt.extRegsDSA.Transparency, clone.Transparency)
+					if assert.Len(t, clone.Transparency, len(tt.extRegsDSA.Transparency)) && len(tt.extRegsDSA.Transparency) > 0 {
+						assert.NotSame(t, &tt.extRegsDSA.Transparency[0], &clone.Transparency[0])
+					}
 				}
 			}
 		})

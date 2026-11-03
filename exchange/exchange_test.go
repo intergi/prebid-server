@@ -1216,7 +1216,10 @@ func TestGetBidCacheInfoEndToEnd(t *testing.T) {
 	adapterList := make([]openrtb_ext.BidderName, 0, 2)
 	syncerKeys := []string{}
 	var moduleStageNames map[string][]string
-	testEngine := metricsConf.NewMetricsEngine(cfg, adapterList, syncerKeys, moduleStageNames)
+	testEngine, err := metricsConf.NewMetricsEngine(cfg, adapterList, syncerKeys, moduleStageNames)
+	if err != nil {
+		t.Fatal(err)
+	}
 	//	2) Init new exchange with said configuration
 	handlerNoBidServer := func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(204) }
 	server := httptest.NewServer(http.HandlerFunc(handlerNoBidServer))
@@ -2443,7 +2446,10 @@ func newExchangeForTests(t *testing.T, filename string, aliases map[string]strin
 		}
 	}
 
-	metricsEngine := metricsConf.NewMetricsEngine(&config.Configuration{}, openrtb_ext.CoreBidderNames(), nil, nil)
+	metricsEngine, err := metricsConf.NewMetricsEngine(&config.Configuration{}, openrtb_ext.CoreBidderNames(), nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 	paramValidator, err := openrtb_ext.NewBidderParamsValidator("../static/bidder-params")
 	if err != nil {
 		t.Fatalf("Failed to create params validator: %v", error)
@@ -4666,8 +4672,12 @@ func TestCallSignHeader(t *testing.T) {
 }
 
 func TestValidateBannerCreativeSize(t *testing.T) {
+	metricsEngine, err := metricsConf.NewMetricsEngine(&config.Configuration{}, openrtb_ext.CoreBidderNames(), nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 	exchange := exchange{bidValidationEnforcement: config.Validations{MaxCreativeWidth: 100, MaxCreativeHeight: 100},
-		me: metricsConf.NewMetricsEngine(&config.Configuration{}, openrtb_ext.CoreBidderNames(), nil, nil),
+		me: metricsEngine,
 	}
 	testCases := []struct {
 		description                 string
@@ -4717,8 +4727,12 @@ func TestValidateBannerCreativeSize(t *testing.T) {
 }
 
 func TestValidateBidAdM(t *testing.T) {
+	metricsEngine, err := metricsConf.NewMetricsEngine(&config.Configuration{}, openrtb_ext.CoreBidderNames(), nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 	exchange := exchange{bidValidationEnforcement: config.Validations{MaxCreativeWidth: 100, MaxCreativeHeight: 100},
-		me: metricsConf.NewMetricsEngine(&config.Configuration{}, openrtb_ext.CoreBidderNames(), nil, nil),
+		me: metricsEngine,
 	}
 	testCases := []struct {
 		description         string

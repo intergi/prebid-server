@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"net/http"
 	"path/filepath"
 	"runtime"
@@ -73,18 +74,18 @@ func serve(cfg *config.Configuration) error {
 
 	currencyConverterTickerTask := task.NewTickerTask(fetchingInterval, currencyConverter)
 	currencyConverterTickerTask.Start()
+	defer currencyConverterTickerTask.Stop()
 
 	r, err := router.New(cfg, currencyConverter)
 	if err != nil {
 		return err
 	}
+	defer r.Shutdown()
 
 	corsRouter := router.SupportCORS(r)
 	if err := server.Listen(cfg, router.NoCache{Handler: corsRouter}, router.Admin(currencyConverter, fetchingInterval), r.MetricsEngine); err != nil {
-		logger.Fatalf("prebid-server returned an error: %v", err)
+		return fmt.Errorf("prebid-server returned an error: %w", err)
 	}
 
-	currencyConverterTickerTask.Stop()
-	r.Shutdown()
 	return nil
 }

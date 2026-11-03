@@ -581,9 +581,31 @@ type RequestTimeoutHeaders struct {
 }
 
 type Metrics struct {
-	Influxdb   InfluxMetrics     `mapstructure:"influxdb"`
-	Prometheus PrometheusMetrics `mapstructure:"prometheus"`
-	Disabled   DisabledMetrics   `mapstructure:"disabled_metrics"`
+	Influxdb      InfluxMetrics        `mapstructure:"influxdb"`
+	Prometheus    PrometheusMetrics    `mapstructure:"prometheus"`
+	OpenTelemetry OpenTelemetryMetrics `mapstructure:"opentelemetry"`
+	Disabled      DisabledMetrics      `mapstructure:"disabled_metrics"`
+}
+
+type OpenTelemetryMetrics struct {
+	Enabled            bool              `mapstructure:"enabled"`
+	Endpoint           string            `mapstructure:"endpoint"`
+	Protocol           string            `mapstructure:"protocol"`
+	MetricSendInterval int               `mapstructure:"metric_send_interval"`
+	TimeoutMillis      int               `mapstructure:"timeout_ms"`
+	Headers            map[string]string `mapstructure:"headers"`
+	ResourceAttributes map[string]string `mapstructure:"resource_attributes"`
+	ServiceName        string            `mapstructure:"service_name"`
+	ServiceVersion     string            `mapstructure:"service_version"`
+	InstanceID         string            `mapstructure:"instance_id"`
+	AccountLimit       int               `mapstructure:"account_limit"`
+	Temporality        string            `mapstructure:"temporality"`
+	TLS                OpenTelemetryTLS  `mapstructure:"tls"`
+}
+
+type OpenTelemetryTLS struct {
+	CAFile             string `mapstructure:"ca_file"`
+	InsecureSkipVerify bool   `mapstructure:"insecure_skip_verify"`
 }
 
 type DisabledMetrics struct {
@@ -615,7 +637,8 @@ type DisabledMetrics struct {
 }
 
 func (cfg *Metrics) validate(errs []error) []error {
-	return cfg.Prometheus.validate(errs)
+	errs = cfg.Prometheus.validate(errs)
+	return cfg.OpenTelemetry.validate(errs)
 }
 
 type InfluxMetrics struct {
@@ -644,6 +667,42 @@ func (cfg *PrometheusMetrics) validate(errs []error) []error {
 
 func (m *PrometheusMetrics) Timeout() time.Duration {
 	return time.Duration(m.TimeoutMillisRaw) * time.Millisecond
+}
+
+func (cfg *OpenTelemetryMetrics) validate(errs []error) []error {
+	if !cfg.Enabled {
+		return errs
+	}
+	if cfg.Endpoint != "" {
+		endpoint := cfg.Endpoint
+		if !strings.Contains(endpoint, "://") {
+			scheme := "http"
+			if cfg.TLS.CAFile != "" || cfg.TLS.InsecureSkipVerify {
+				scheme = "https"
+			}
+			endpoint = scheme + "://" + endpoint
+		}
+		parsed, err := url.ParseRequestURI(endpoint)
+		if err != nil || parsed.Host == "" || parsed.User != nil || parsed.RawQuery != "" || parsed.Fragment != "" || (parsed.Scheme != "http" && parsed.Scheme != "https") {
+			errs = append(errs, fmt.Errorf("metrics.opentelemetry.endpoint must be an HTTP or HTTPS URL or host:port"))
+		}
+	}
+	if cfg.Protocol != "" && cfg.Protocol != "http/protobuf" {
+		errs = append(errs, fmt.Errorf("metrics.opentelemetry.protocol must be \"http/protobuf\". Got %q", cfg.Protocol))
+	}
+	if cfg.MetricSendInterval <= 0 {
+		errs = append(errs, fmt.Errorf("metrics.opentelemetry.metric_send_interval must be positive. Got %d", cfg.MetricSendInterval))
+	}
+	if cfg.TimeoutMillis <= 0 {
+		errs = append(errs, fmt.Errorf("metrics.opentelemetry.timeout_ms must be positive. Got %d", cfg.TimeoutMillis))
+	}
+	if cfg.AccountLimit < 0 {
+		errs = append(errs, fmt.Errorf("metrics.opentelemetry.account_limit must not be negative. Got %d", cfg.AccountLimit))
+	}
+	if cfg.Temporality != "" && cfg.Temporality != "cumulative" && cfg.Temporality != "delta" {
+		errs = append(errs, fmt.Errorf("metrics.opentelemetry.temporality must be \"cumulative\" or \"delta\". Got %q", cfg.Temporality))
+	}
+	return errs
 }
 
 // ExternalCache configures the externally accessible cache url.
@@ -1020,6 +1079,20 @@ func SetupViper(v *viper.Viper, filename string, bidderInfos BidderInfos) {
 	v.SetDefault("metrics.prometheus.namespace", "")
 	v.SetDefault("metrics.prometheus.subsystem", "")
 	v.SetDefault("metrics.prometheus.timeout_ms", 10000)
+	v.SetDefault("metrics.opentelemetry.enabled", false)
+	v.SetDefault("metrics.opentelemetry.endpoint", "localhost:4318")
+	v.SetDefault("metrics.opentelemetry.protocol", "http/protobuf")
+	v.SetDefault("metrics.opentelemetry.metric_send_interval", 30)
+	v.SetDefault("metrics.opentelemetry.timeout_ms", 10000)
+	v.SetDefault("metrics.opentelemetry.headers", map[string]string{})
+	v.SetDefault("metrics.opentelemetry.resource_attributes", map[string]string{})
+	v.SetDefault("metrics.opentelemetry.service_name", "prebid-server")
+	v.SetDefault("metrics.opentelemetry.service_version", "")
+	v.SetDefault("metrics.opentelemetry.instance_id", "")
+	v.SetDefault("metrics.opentelemetry.account_limit", 1000)
+	v.SetDefault("metrics.opentelemetry.temporality", "cumulative")
+	v.SetDefault("metrics.opentelemetry.tls.ca_file", "")
+	v.SetDefault("metrics.opentelemetry.tls.insecure_skip_verify", false)
 	v.SetDefault("category_mapping.filesystem.enabled", true)
 	v.SetDefault("category_mapping.filesystem.directorypath", "./static/category-mapping")
 	v.SetDefault("category_mapping.http.endpoint", "")
