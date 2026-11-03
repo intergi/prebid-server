@@ -9,6 +9,7 @@
 - Account attributes have a per-process limit and excess IDs map to `account="overflow"`. Existing disabled account/adapter settings are honored. Runtime metrics use the official OTel runtime instrumentation.
 - OTel configuration is under `metrics.opentelemetry`; it is disabled by default and validates endpoint, protocol, interval, timeout, account limit, and temporality when enabled. Configuration and explicit resource attributes take precedence over standard OTel environment values for the settings they supply.
 - Prometheus preloads label combinations at zero, while OTel emits only after a measurement. Dashboards must not assume unobserved label combinations exist as zero-valued series.
+- Fixed instruments are created lazily and cached, avoiding duplicate metric-name catalogs. Module instruments are created at startup without recording measurements; a regression test verifies there are no phantom calls, failures, or timeouts.
 
 ## Lifecycle
 
@@ -21,7 +22,7 @@
 
 - `./validate.sh` runs formatting, every Go package test, and `go vet ./...`.
 - Adding OTel v1.39.0 raises the selected Testify version to v1.11.1 through its module requirements. That version rejects `assert.NotSame` when arguments are not pointers. Existing tests had used it for values, maps, and slices, and had passed as no-op checks with the older version.
-- The affected clone and merge tests now call local test helpers: pointer identity uses `assert.NotSame`; map and non-empty slice identity compares backing references; scalar value comparisons are not treated as reference checks.
+- Existing pointer assertions remain unchanged. Non-empty slice comparisons use backing-element pointers; map independence is verified through mutation. Meaningless scalar, struct-value, and empty-slice identity assertions were removed, along with the three compatibility helpers.
 - The affected package tests pass, and the complete `./validate.sh` passes with `go vet` enabled.
 
 ## Relevant References

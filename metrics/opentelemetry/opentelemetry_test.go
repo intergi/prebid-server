@@ -86,6 +86,36 @@ func TestAccountAttributesAreBoundedAndDisabledMetricsAreHonored(t *testing.T) {
 	require.Empty(t, metricsByName(data, "account_response_validation_size_err"))
 }
 
+func TestModuleInitializationDoesNotRecordMeasurements(t *testing.T) {
+	reader := sdkmetric.NewManualReader()
+	provider := sdkmetric.NewMeterProvider(sdkmetric.WithReader(reader))
+	t.Cleanup(func() { require.NoError(t, provider.Shutdown(context.Background())) })
+	engine := newMetrics(provider, config.OpenTelemetryMetrics{}, config.PrometheusMetrics{}, config.DisabledMetrics{},
+		map[string][]string{"test": {"entrypoint"}})
+
+	require.Len(t, engine.counters, 7)
+	require.Len(t, engine.histograms, 1)
+	require.Empty(t, collectMetrics(t, reader).ScopeMetrics)
+
+	engine.RecordModuleCalled(metrics.ModuleLabels{Module: "test", Stage: "entrypoint"}, 20*time.Millisecond)
+	data := collectMetrics(t, reader)
+	calls, ok := findMetric(t, data, "modules_test_called").Data.(metricdata.Sum[int64])
+	require.True(t, ok)
+	require.Len(t, calls.DataPoints, 1)
+	require.EqualValues(t, 1, calls.DataPoints[0].Value)
+	stage, ok := calls.DataPoints[0].Attributes.Value("stage")
+	require.True(t, ok)
+	require.Equal(t, "entrypoint", stage.AsString())
+	duration, ok := findMetric(t, data, "modules_test_duration").Data.(metricdata.Histogram[float64])
+	require.True(t, ok)
+	require.Len(t, duration.DataPoints, 1)
+	require.EqualValues(t, 1, duration.DataPoints[0].Count)
+	require.InDelta(t, 0.02, duration.DataPoints[0].Sum, 1e-9)
+	for _, suffix := range []string{"failed", "success_noops", "success_updates", "success_rejects", "execution_errors", "timeouts"} {
+		require.Empty(t, metricsByName(data, "modules_test_"+suffix))
+	}
+}
+
 func TestShutdownExportsPendingMetricsToOTLPHTTP(t *testing.T) {
 	requests := make(chan []byte, 1)
 	collector := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

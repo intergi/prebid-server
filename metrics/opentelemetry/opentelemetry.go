@@ -140,38 +140,9 @@ func newMetrics(provider *sdkmetric.MeterProvider, cfg config.OpenTelemetryMetri
 		accounts:     make(map[string]struct{}),
 		accountLimit: cfg.AccountLimit,
 	}
-	for _, name := range []string{
-		"connections_closed", "connections_error", "connections_opened", "tmax_timeout",
-		"cookie_sync_requests", "setuid_requests", "impressions_requests", "requests",
-		"debug_requests", "requests_without_cookie", "stored_impressions_cache_performance",
-		"stored_request_cache_performance", "account_cache_performance", "stored_account_errors",
-		"stored_amp_errors", "stored_category_errors", "stored_request_errors", "stored_video_errors",
-		"timeout_notification", "privacy_ccpa", "privacy_coppa", "privacy_tcf", "privacy_lmt",
-		"stored_response_errors", "stored_responses", "gvl_requests", "live_gvl_fetch", "adapter_bids",
-		"adapter_errors", "adapter_panics", "adapter_requests", "adapter_connection_created",
-		"adapter_connection_reused", "adapter_connection_dial_errors", "adapter_response_validation_size_err",
-		"adapter_response_validation_size_warn", "adapter_response_validation_secure_err",
-		"adapter_response_validation_secure_warn", "adapter_throttled", "syncer_requests", "syncer_sets",
-		"account_requests", "account_debug_requests", "account_stored_responses",
-		"account_response_validation_size_err", "account_response_validation_size_warn",
-		"account_response_validation_secure_err", "account_response_validation_secure_warn",
-		"ads_cert_requests", "adapter_buyeruids_scrubbed", "adapter_gdpr_requests_blocked",
-	} {
-		m.getCounter(name)
-	}
-	for _, name := range []string{
-		"request_size_bytes", "request_time_seconds", "request_queue_time", "prebidcache_write_time_seconds",
-		"stored_account_fetch_time_seconds", "stored_amp_fetch_time_seconds", "stored_category_fetch_time_seconds",
-		"stored_request_fetch_time_seconds", "stored_video_fetch_time_seconds", "stored_response_fetch_time_seconds",
-		"dns_lookup_time", "tls_handshake_time", "bidder_server_response_time_seconds", "adapter_prices",
-		"adapter_connection_wait", "adapter_connection_dial_time", "adapter_request_time_seconds", "overhead_time_seconds",
-		"ads_cert_sign_time",
-	} {
-		m.histogram(name)
-	}
 	for module := range moduleStageNames {
 		for _, suffix := range []string{"called", "failed", "success_noops", "success_updates", "success_rejects", "execution_errors", "timeouts"} {
-			m.counter("modules_"+module+"_"+suffix, nil)
+			m.getCounter("modules_" + module + "_" + suffix)
 		}
 		m.histogram("modules_" + module + "_duration")
 	}
