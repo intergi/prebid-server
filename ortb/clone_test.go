@@ -21,7 +21,6 @@ func TestCloneDataSlice(t *testing.T) {
 		given := []openrtb2.Data{}
 		result := CloneDataSlice(given)
 		assert.Empty(t, result)
-		assert.NotSame(t, given, result)
 	})
 
 	t.Run("one", func(t *testing.T) {
@@ -30,8 +29,8 @@ func TestCloneDataSlice(t *testing.T) {
 		}
 		result := CloneDataSlice(given)
 		assert.Equal(t, given, result, "equality")
-		assert.NotSame(t, given[0], result[0], "item-pointer")
-		assert.NotSame(t, given[0].Ext, result[0].Ext, "item-pointer-ext")
+		assert.NotSame(t, &given[0], &result[0], "item-pointer")
+		assert.NotSame(t, &given[0].Ext[0], &result[0].Ext[0], "item-pointer-ext")
 	})
 
 	t.Run("many", func(t *testing.T) {
@@ -41,10 +40,10 @@ func TestCloneDataSlice(t *testing.T) {
 		}
 		result := CloneDataSlice(given)
 		assert.Equal(t, given, result, "equality")
-		assert.NotSame(t, given[0], result[0], "item0-pointer")
-		assert.NotSame(t, given[0].Ext, result[0].Ext, "item0-pointer-ext")
-		assert.NotSame(t, given[1], result[1], "item1-pointer")
-		assert.NotSame(t, given[1].Ext, result[1].Ext, "item1-pointer-ext")
+		assert.NotSame(t, &given[0], &result[0], "item0-pointer")
+		assert.NotSame(t, &given[0].Ext[0], &result[0].Ext[0], "item0-pointer-ext")
+		assert.NotSame(t, &given[1], &result[1], "item1-pointer")
+		assert.NotSame(t, &given[1].Ext[0], &result[1].Ext[0], "item1-pointer-ext")
 	})
 }
 
@@ -58,11 +57,10 @@ func TestCloneData(t *testing.T) {
 		}
 		result := CloneData(given)
 		assert.Equal(t, given, result, "equality")
-		assert.NotSame(t, given, result, "pointer")
-		assert.NotSame(t, given.Segment, result.Segment, "segment")
-		assert.NotSame(t, given.Segment[0], result.Segment[0], "segment-item")
-		assert.NotSame(t, given.Segment[0].Ext, result.Segment[0].Ext, "segment-item-ext")
-		assert.NotSame(t, given.Ext, result.Ext, "ext")
+		assert.NotSame(t, &given.Segment[0], &result.Segment[0], "segment")
+		assert.NotSame(t, &given.Segment[0], &result.Segment[0], "segment-item")
+		assert.NotSame(t, &given.Segment[0].Ext[0], &result.Segment[0].Ext[0], "segment-item-ext")
+		assert.NotSame(t, &given.Ext[0], &result.Ext[0], "ext")
 	})
 
 	t.Run("assumptions", func(t *testing.T) {
@@ -84,7 +82,6 @@ func TestCloneSegmentSlice(t *testing.T) {
 		given := []openrtb2.Segment{}
 		result := CloneSegmentSlice(given)
 		assert.Empty(t, result)
-		assert.NotSame(t, given, result)
 	})
 
 	t.Run("one", func(t *testing.T) {
@@ -93,8 +90,8 @@ func TestCloneSegmentSlice(t *testing.T) {
 		}
 		result := CloneSegmentSlice(given)
 		assert.Equal(t, given, result, "equality")
-		assert.NotSame(t, given[0], result[0], "item-pointer")
-		assert.NotSame(t, given[0].Ext, result[0].Ext, "item-pointer-ext")
+		assert.NotSame(t, &given[0], &result[0], "item-pointer")
+		assert.NotSame(t, &given[0].Ext[0], &result[0].Ext[0], "item-pointer-ext")
 	})
 
 	t.Run("many", func(t *testing.T) {
@@ -104,10 +101,10 @@ func TestCloneSegmentSlice(t *testing.T) {
 		}
 		result := CloneSegmentSlice(given)
 		assert.Equal(t, given, result, "equality")
-		assert.NotSame(t, given[0], result[0], "item0-pointer")
-		assert.NotSame(t, given[0].Ext, result[0].Ext, "item0-pointer-ext")
-		assert.NotSame(t, given[1], result[1], "item1-pointer")
-		assert.NotSame(t, given[1].Ext, result[1].Ext, "item1-pointer-ext")
+		assert.NotSame(t, &given[0], &result[0], "item0-pointer")
+		assert.NotSame(t, &given[0].Ext[0], &result[0].Ext[0], "item0-pointer-ext")
+		assert.NotSame(t, &given[1], &result[1], "item1-pointer")
+		assert.NotSame(t, &given[1].Ext[0], &result[1].Ext[0], "item1-pointer-ext")
 	})
 }
 
@@ -121,8 +118,7 @@ func TestCloneSegment(t *testing.T) {
 		}
 		result := CloneSegment(given)
 		assert.Equal(t, given, result, "equality")
-		assert.NotSame(t, given, result, "pointer")
-		assert.NotSame(t, given.Ext, result.Ext, "ext")
+		assert.NotSame(t, &given.Ext[0], &result.Ext[0], "ext")
 	})
 
 	t.Run("assumptions", func(t *testing.T) {
@@ -164,14 +160,14 @@ func TestCloneUser(t *testing.T) {
 		result := CloneUser(given)
 		assert.Equal(t, given, result, "equality")
 		assert.NotSame(t, given, result, "pointer")
-		assert.NotSame(t, given.KwArray, result.KwArray, "cat")
+		assert.NotSame(t, &given.KwArray[0], &result.KwArray[0], "cat")
 		assert.NotSame(t, given.Geo, result.Geo, "geo")
-		assert.NotSame(t, given.Geo.Ext, result.Geo.Ext, "geo-ext")
-		assert.NotSame(t, given.Data[0], result.Data[0], "data-item")
-		assert.NotSame(t, given.Data[0].Ext, result.Data[0].Ext, "data-item-ext")
-		assert.NotSame(t, given.EIDs[0], result.EIDs[0], "eids-item")
-		assert.NotSame(t, given.EIDs[0].Ext, result.EIDs[0].Ext, "eids-item-ext")
-		assert.NotSame(t, given.Ext, result.Ext, "ext")
+		assert.NotSame(t, &given.Geo.Ext[0], &result.Geo.Ext[0], "geo-ext")
+		assert.NotSame(t, &given.Data[0], &result.Data[0], "data-item")
+		assert.NotSame(t, &given.Data[0].Ext[0], &result.Data[0].Ext[0], "data-item-ext")
+		assert.NotSame(t, &given.EIDs[0], &result.EIDs[0], "eids-item")
+		assert.NotSame(t, &given.EIDs[0].Ext[0], &result.EIDs[0].Ext[0], "eids-item-ext")
+		assert.NotSame(t, &given.Ext[0], &result.Ext[0], "ext")
 	})
 
 	t.Run("assumptions", func(t *testing.T) {
@@ -243,14 +239,14 @@ func TestCloneDevice(t *testing.T) {
 		assert.Equal(t, given, result, "equality")
 		assert.NotSame(t, given, result, "pointer")
 		assert.NotSame(t, given.Geo, result.Geo, "geo")
-		assert.NotSame(t, given.Geo.Ext, result.Geo.Ext, "geo-ext")
+		assert.NotSame(t, &given.Geo.Ext[0], &result.Geo.Ext[0], "geo-ext")
 		assert.NotSame(t, given.DNT, result.DNT, "dnt")
 		assert.NotSame(t, given.Lmt, result.Lmt, "lmt")
 		assert.NotSame(t, given.SUA, result.SUA, "sua")
 		assert.NotSame(t, given.JS, result.JS, "js")
 		assert.NotSame(t, given.GeoFetch, result.GeoFetch, "geofetch")
 		assert.NotSame(t, given.ConnectionType, result.ConnectionType, "connectionType")
-		assert.NotSame(t, given.Ext, result.Ext, "ext")
+		assert.NotSame(t, &given.Ext[0], &result.Ext[0], "ext")
 	})
 
 	t.Run("assumptions", func(t *testing.T) {
@@ -298,11 +294,10 @@ func TestCloneUserAgent(t *testing.T) {
 		result := CloneUserAgent(given)
 		assert.Equal(t, given, result, "equality")
 		assert.NotSame(t, given, result, "pointer")
-		assert.NotSame(t, given.Browsers, result.Browsers, "browsers")
+		assert.NotSame(t, &given.Browsers[0], &result.Browsers[0], "browsers")
 		assert.NotSame(t, given.Platform, result.Platform, "platform")
 		assert.NotSame(t, given.Mobile, result.Mobile, "mobile")
-		assert.NotSame(t, given.Architecture, result.Architecture, "architecture")
-		assert.NotSame(t, given.Ext, result.Ext, "ext")
+		assert.NotSame(t, &given.Ext[0], &result.Ext[0], "ext")
 	})
 
 	t.Run("assumptions", func(t *testing.T) {
@@ -326,7 +321,6 @@ func TestCloneBrandVersionSlice(t *testing.T) {
 		given := []openrtb2.BrandVersion{}
 		result := CloneBrandVersionSlice(given)
 		assert.Empty(t, result)
-		assert.NotSame(t, given, result)
 	})
 
 	t.Run("one", func(t *testing.T) {
@@ -335,8 +329,8 @@ func TestCloneBrandVersionSlice(t *testing.T) {
 		}
 		result := CloneBrandVersionSlice(given)
 		assert.Equal(t, given, result, "equality")
-		assert.NotSame(t, given[0], result[0], "item-pointer")
-		assert.NotSame(t, given[0].Ext, result[0].Ext, "item-pointer-ext")
+		assert.NotSame(t, &given[0], &result[0], "item-pointer")
+		assert.NotSame(t, &given[0].Ext[0], &result[0].Ext[0], "item-pointer-ext")
 	})
 
 	t.Run("many", func(t *testing.T) {
@@ -347,12 +341,12 @@ func TestCloneBrandVersionSlice(t *testing.T) {
 		}
 		result := CloneBrandVersionSlice(given)
 		assert.Equal(t, given, result, "equality")
-		assert.NotSame(t, given[0], result[0], "item0-pointer")
-		assert.NotSame(t, given[0].Ext, result[0].Ext, "item0-pointer-ext")
-		assert.NotSame(t, given[1], result[1], "item1-pointer")
-		assert.NotSame(t, given[1].Ext, result[1].Ext, "item1-pointer-ext")
-		assert.NotSame(t, given[2], result[2], "item1-pointer")
-		assert.NotSame(t, given[2].Ext, result[2].Ext, "item1-pointer-ext")
+		assert.NotSame(t, &given[0], &result[0], "item0-pointer")
+		assert.NotSame(t, &given[0].Ext[0], &result[0].Ext[0], "item0-pointer-ext")
+		assert.NotSame(t, &given[1], &result[1], "item1-pointer")
+		assert.NotSame(t, &given[1].Ext[0], &result[1].Ext[0], "item1-pointer-ext")
+		assert.NotSame(t, &given[2], &result[2], "item1-pointer")
+		assert.NotSame(t, &given[2].Ext[0], &result[2].Ext[0], "item1-pointer-ext")
 	})
 }
 
@@ -378,7 +372,7 @@ func TestCloneBrandVersion(t *testing.T) {
 		result := CloneBrandVersion(given)
 		assert.Equal(t, given, result, "equality")
 		assert.NotSame(t, given, result, "pointer")
-		assert.NotSame(t, given.Ext, result.Ext, "ext")
+		assert.NotSame(t, &given.Ext[0], &result.Ext[0], "ext")
 	})
 
 	t.Run("assumptions", func(t *testing.T) {
@@ -423,9 +417,9 @@ func TestCloneSource(t *testing.T) {
 		assert.NotSame(t, given, result, "pointer")
 		assert.NotSame(t, given.FD, result.FD, "fd")
 		assert.NotSame(t, given.SChain, result.SChain, "schain")
-		assert.NotSame(t, given.SChain.Ext, result.SChain.Ext, "schain.ext")
-		assert.NotSame(t, given.Ext, result.Ext, "ext")
-		assert.NotSame(t, given.SChain.Nodes[0].Ext, result.SChain.Nodes[0].Ext, "schain.nodes.ext")
+		assert.NotSame(t, &given.SChain.Ext[0], &result.SChain.Ext[0], "schain.ext")
+		assert.NotSame(t, &given.Ext[0], &result.Ext[0], "ext")
+		assert.NotSame(t, &given.SChain.Nodes[0].Ext[0], &result.SChain.Nodes[0].Ext[0], "schain.nodes.ext")
 	})
 
 	t.Run("assumptions", func(t *testing.T) {
@@ -462,9 +456,9 @@ func TestCloneSChain(t *testing.T) {
 		result := CloneSChain(given)
 		assert.Equal(t, given, result, "equality")
 		assert.NotSame(t, given, result, "pointer")
-		assert.NotSame(t, given.Nodes, result.Nodes, "nodes")
-		assert.NotSame(t, given.Nodes[0].Ext, result.Nodes[0].Ext, "nodes.ext")
-		assert.NotSame(t, given.Ext, result.Ext, "ext")
+		assert.NotSame(t, &given.Nodes[0], &result.Nodes[0], "nodes")
+		assert.NotSame(t, &given.Nodes[0].Ext[0], &result.Nodes[0].Ext[0], "nodes.ext")
+		assert.NotSame(t, &given.Ext[0], &result.Ext[0], "ext")
 	})
 
 	t.Run("assumptions", func(t *testing.T) {
@@ -488,7 +482,6 @@ func TestCloneSupplyChainNodes(t *testing.T) {
 		given := []openrtb2.SupplyChainNode{}
 		result := CloneSupplyChainNodes(given)
 		assert.Empty(t, result)
-		assert.NotSame(t, given, result)
 	})
 
 	t.Run("one", func(t *testing.T) {
@@ -497,9 +490,9 @@ func TestCloneSupplyChainNodes(t *testing.T) {
 		}
 		result := CloneSupplyChainNodes(given)
 		assert.Equal(t, given, result, "equality")
-		assert.NotSame(t, given[0], result[0], "item-pointer")
+		assert.NotSame(t, &given[0], &result[0], "item-pointer")
 		assert.NotSame(t, given[0].HP, result[0].HP, "item-pointer-hp")
-		assert.NotSame(t, given[0].Ext, result[0].Ext, "item-pointer-ext")
+		assert.NotSame(t, &given[0].Ext[0], &result[0].Ext[0], "item-pointer-ext")
 	})
 
 	t.Run("many", func(t *testing.T) {
@@ -510,14 +503,14 @@ func TestCloneSupplyChainNodes(t *testing.T) {
 		}
 		result := CloneSupplyChainNodes(given)
 		assert.Equal(t, given, result, "equality")
-		assert.NotSame(t, given[0], result[0], "item0-pointer")
-		assert.NotSame(t, given[0].Ext, result[0].Ext, "item0-pointer-ext")
+		assert.NotSame(t, &given[0], &result[0], "item0-pointer")
+		assert.NotSame(t, &given[0].Ext[0], &result[0].Ext[0], "item0-pointer-ext")
 		assert.NotSame(t, given[0].HP, result[0].HP, "item0-pointer-hp")
-		assert.NotSame(t, given[1], result[1], "item1-pointer")
-		assert.NotSame(t, given[1].Ext, result[1].Ext, "item1-pointer-ext")
+		assert.NotSame(t, &given[1], &result[1], "item1-pointer")
+		assert.NotSame(t, &given[1].Ext[0], &result[1].Ext[0], "item1-pointer-ext")
 		assert.NotSame(t, given[1].HP, result[1].HP, "item1-pointer-hp")
-		assert.NotSame(t, given[2], result[2], "item2-pointer")
-		assert.NotSame(t, given[2].Ext, result[2].Ext, "item2-pointer-ext")
+		assert.NotSame(t, &given[2], &result[2], "item2-pointer")
+		assert.NotSame(t, &given[2].Ext[0], &result[2].Ext[0], "item2-pointer-ext")
 		assert.NotSame(t, given[2].HP, result[2].HP, "item2-pointer-hp")
 	})
 }
@@ -534,8 +527,7 @@ func TestCloneSupplyChainNode(t *testing.T) {
 		}
 		result := CloneSupplyChainNode(given)
 		assert.Equal(t, given, result, "equality")
-		assert.NotSame(t, given, result, "pointer")
-		assert.NotSame(t, given.Ext, result.Ext, "ext")
+		assert.NotSame(t, &given.Ext[0], &result.Ext[0], "ext")
 		assert.NotSame(t, given.HP, result.HP, "hp")
 	})
 
@@ -583,7 +575,7 @@ func TestCloneGeo(t *testing.T) {
 		assert.NotSame(t, given, result, "pointer")
 		assert.NotSame(t, given.Lat, result.Lat, "lat")
 		assert.NotSame(t, given.Lon, result.Lon, "lon")
-		assert.NotSame(t, given.Ext, result.Ext, "ext")
+		assert.NotSame(t, &given.Ext[0], &result.Ext[0], "ext")
 	})
 
 	t.Run("assumptions", func(t *testing.T) {
@@ -606,7 +598,6 @@ func TestCloneEIDSlice(t *testing.T) {
 		given := []openrtb2.EID{}
 		result := CloneEIDSlice(given)
 		assert.Empty(t, result)
-		assert.NotSame(t, given, result)
 	})
 
 	t.Run("one", func(t *testing.T) {
@@ -615,8 +606,8 @@ func TestCloneEIDSlice(t *testing.T) {
 		}
 		result := CloneEIDSlice(given)
 		assert.Equal(t, given, result, "equality")
-		assert.NotSame(t, given[0], result[0], "item-pointer")
-		assert.NotSame(t, given[0].Ext, result[0].Ext, "item-pointer-ext")
+		assert.NotSame(t, &given[0], &result[0], "item-pointer")
+		assert.NotSame(t, &given[0].Ext[0], &result[0].Ext[0], "item-pointer-ext")
 	})
 
 	t.Run("many", func(t *testing.T) {
@@ -626,10 +617,10 @@ func TestCloneEIDSlice(t *testing.T) {
 		}
 		result := CloneEIDSlice(given)
 		assert.Equal(t, given, result, "equality")
-		assert.NotSame(t, given[0], result[0], "item0-pointer")
-		assert.NotSame(t, given[0].Ext, result[0].Ext, "item0-pointer-ext")
-		assert.NotSame(t, given[1], result[1], "item1-pointer")
-		assert.NotSame(t, given[1].Ext, result[1].Ext, "item1-pointer-ext")
+		assert.NotSame(t, &given[0], &result[0], "item0-pointer")
+		assert.NotSame(t, &given[0].Ext[0], &result[0].Ext[0], "item0-pointer-ext")
+		assert.NotSame(t, &given[1], &result[1], "item1-pointer")
+		assert.NotSame(t, &given[1].Ext[0], &result[1].Ext[0], "item1-pointer-ext")
 	})
 }
 
@@ -642,11 +633,10 @@ func TestCloneEID(t *testing.T) {
 		}
 		result := CloneEID(given)
 		assert.Equal(t, given, result, "equality")
-		assert.NotSame(t, given, result, "pointer")
-		assert.NotSame(t, given.UIDs, result.UIDs, "uids")
-		assert.NotSame(t, given.UIDs[0], result.UIDs[0], "uids-item")
-		assert.NotSame(t, given.UIDs[0].Ext, result.UIDs[0].Ext, "uids-item-ext")
-		assert.NotSame(t, given.Ext, result.Ext, "ext")
+		assert.NotSame(t, &given.UIDs[0], &result.UIDs[0], "uids")
+		assert.NotSame(t, &given.UIDs[0], &result.UIDs[0], "uids-item")
+		assert.NotSame(t, &given.UIDs[0].Ext[0], &result.UIDs[0].Ext[0], "uids-item-ext")
+		assert.NotSame(t, &given.Ext[0], &result.Ext[0], "ext")
 	})
 
 	t.Run("assumptions", func(t *testing.T) {
@@ -668,7 +658,6 @@ func TestCloneUIDSlice(t *testing.T) {
 		given := []openrtb2.UID{}
 		result := CloneUIDSlice(given)
 		assert.Empty(t, result)
-		assert.NotSame(t, given, result)
 	})
 
 	t.Run("one", func(t *testing.T) {
@@ -677,8 +666,8 @@ func TestCloneUIDSlice(t *testing.T) {
 		}
 		result := CloneUIDSlice(given)
 		assert.Equal(t, given, result, "equality")
-		assert.NotSame(t, given[0], result[0], "item-pointer")
-		assert.NotSame(t, given[0].Ext, result[0].Ext, "item-pointer-ext")
+		assert.NotSame(t, &given[0], &result[0], "item-pointer")
+		assert.NotSame(t, &given[0].Ext[0], &result[0].Ext[0], "item-pointer-ext")
 	})
 
 	t.Run("many", func(t *testing.T) {
@@ -688,10 +677,10 @@ func TestCloneUIDSlice(t *testing.T) {
 		}
 		result := CloneUIDSlice(given)
 		assert.Equal(t, given, result, "equality")
-		assert.NotSame(t, given[0], result[0], "item0-pointer")
-		assert.NotSame(t, given[0].Ext, result[0].Ext, "item0-pointer-ext")
-		assert.NotSame(t, given[1], result[1], "item1-pointer")
-		assert.NotSame(t, given[1].Ext, result[1].Ext, "item1-pointer-ext")
+		assert.NotSame(t, &given[0], &result[0], "item0-pointer")
+		assert.NotSame(t, &given[0].Ext[0], &result[0].Ext[0], "item0-pointer-ext")
+		assert.NotSame(t, &given[1], &result[1], "item1-pointer")
+		assert.NotSame(t, &given[1].Ext[0], &result[1].Ext[0], "item1-pointer-ext")
 	})
 }
 
@@ -704,8 +693,7 @@ func TestCloneUID(t *testing.T) {
 		}
 		result := CloneUID(given)
 		assert.Equal(t, given, result, "equality")
-		assert.NotSame(t, given, result, "pointer")
-		assert.NotSame(t, given.Ext, result.Ext, "ext")
+		assert.NotSame(t, &given.Ext[0], &result.Ext[0], "ext")
 	})
 
 	t.Run("assumptions", func(t *testing.T) {
@@ -786,9 +774,8 @@ func TestCloneRegs(t *testing.T) {
 		assert.Equal(t, given, result, "equality")
 		assert.NotSame(t, given, result, "pointer")
 		assert.NotSame(t, given.GDPR, result.GDPR, "gdpr")
-		assert.NotSame(t, given.GPPSID, result.GPPSID, "gppsid[]")
-		assert.NotSame(t, given.GPPSID[0], result.GPPSID[0], "gppsid[0]")
-		assert.NotSame(t, given.Ext, result.Ext, "ext")
+		assert.NotSame(t, &given.GPPSID[0], &result.GPPSID[0], "gppsid[]")
+		assert.NotSame(t, &given.Ext[0], &result.Ext[0], "ext")
 	})
 
 	t.Run("assumptions", func(t *testing.T) {

@@ -1272,6 +1272,24 @@ func TestNegativePrometheusTimeout(t *testing.T) {
 	assertOneError(t, cfg.validate(v), "metrics.prometheus.timeout_ms must be positive if metrics.prometheus.port is defined. Got timeout=0 and port=8001")
 }
 
+func TestOpenTelemetryMetricsValidation(t *testing.T) {
+	cfg, v := newDefaultConfig(t)
+	cfg.Metrics.OpenTelemetry.Enabled = true
+	cfg.Metrics.OpenTelemetry.MetricSendInterval = 0
+	assertOneError(t, cfg.validate(v), "metrics.opentelemetry.metric_send_interval must be positive. Got 0")
+
+	cfg.Metrics.OpenTelemetry.MetricSendInterval = 30
+	cfg.Metrics.OpenTelemetry.Endpoint = "ftp://collector.example:4318"
+	assertOneError(t, cfg.validate(v), "metrics.opentelemetry.endpoint must be an HTTP or HTTPS URL or host:port")
+
+	cfg.Metrics.OpenTelemetry.Endpoint = "https://user:secret@collector.example:4318"
+	assertOneError(t, cfg.validate(v), "metrics.opentelemetry.endpoint must be an HTTP or HTTPS URL or host:port")
+
+	cfg.Metrics.OpenTelemetry.Endpoint = ""
+	cfg.Metrics.OpenTelemetry.Protocol = "grpc"
+	assertOneError(t, cfg.validate(v), "metrics.opentelemetry.protocol must be \"http/protobuf\". Got \"grpc\"")
+}
+
 func TestInvalidHostVendorID(t *testing.T) {
 	tests := []struct {
 		description  string

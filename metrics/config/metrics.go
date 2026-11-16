@@ -5,6 +5,7 @@ import (
 
 	"github.com/prebid/prebid-server/v4/config"
 	"github.com/prebid/prebid-server/v4/metrics"
+	opentelemetrymetrics "github.com/prebid/prebid-server/v4/metrics/opentelemetry"
 	prometheusmetrics "github.com/prebid/prebid-server/v4/metrics/prometheus"
 	"github.com/prebid/prebid-server/v4/openrtb_ext"
 	gometrics "github.com/rcrowley/go-metrics"
@@ -13,12 +14,19 @@ import (
 
 // NewMetricsEngine reads the configuration and returns the appropriate metrics engine
 // for this instance.
-func NewMetricsEngine(cfg *config.Configuration, adapterList []openrtb_ext.BidderName, syncerKeys []string, moduleStageNames map[string][]string) *DetailedMetricsEngine {
+func NewMetricsEngine(cfg *config.Configuration, adapterList []openrtb_ext.BidderName, syncerKeys []string, moduleStageNames map[string][]string) (*DetailedMetricsEngine, error) {
 	// Create a list of metrics engines to use.
-	// Capacity of 2, as unlikely to have more than 2 metrics backends, and in the case
+	// Capacity of 3, for InfluxDB, Prometheus, and OpenTelemetry; in the case
 	// of 1 we won't use the list so it will be garbage collected.
-	engineList := make(MultiMetricsEngine, 0, 2)
+	engineList := make(MultiMetricsEngine, 0, 3)
 	returnEngine := DetailedMetricsEngine{}
+	if cfg.Metrics.OpenTelemetry.Enabled {
+		var err error
+		returnEngine.OpenTelemetryMetrics, err = opentelemetrymetrics.NewMetrics(cfg.Metrics.OpenTelemetry, cfg.Metrics.Prometheus, cfg.Metrics.Disabled, moduleStageNames)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	if cfg.Metrics.Influxdb.Host != "" {
 		// Currently use go-metrics as the metrics piece for influx
@@ -43,6 +51,9 @@ func NewMetricsEngine(cfg *config.Configuration, adapterList []openrtb_ext.Bidde
 		returnEngine.PrometheusMetrics = prometheusmetrics.NewMetrics(cfg.Metrics.Prometheus, cfg.Metrics.Disabled, syncerKeys, moduleStageNames)
 		engineList = append(engineList, returnEngine.PrometheusMetrics)
 	}
+	if returnEngine.OpenTelemetryMetrics != nil {
+		engineList = append(engineList, returnEngine.OpenTelemetryMetrics)
+	}
 
 	// Now return the proper metrics engine
 	if len(engineList) > 1 {
@@ -53,14 +64,15 @@ func NewMetricsEngine(cfg *config.Configuration, adapterList []openrtb_ext.Bidde
 		returnEngine.MetricsEngine = &NilMetricsEngine{}
 	}
 
-	return &returnEngine
+	return &returnEngine, nil
 }
 
 // DetailedMetricsEngine is a MultiMetricsEngine that preserves links to underlying metrics engines.
 type DetailedMetricsEngine struct {
 	metrics.MetricsEngine
-	GoMetrics         *metrics.Metrics
-	PrometheusMetrics *prometheusmetrics.Metrics
+	GoMetrics            *metrics.Metrics
+	PrometheusMetrics    *prometheusmetrics.Metrics
+	OpenTelemetryMetrics *opentelemetrymetrics.Metrics
 }
 
 // MultiMetricsEngine logs metrics to multiple metrics databases The can be useful in transitioning

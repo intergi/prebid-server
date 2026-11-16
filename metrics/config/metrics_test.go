@@ -20,7 +20,10 @@ func TestNilMetricsEngine(t *testing.T) {
 	cfg := mainConfig.Configuration{}
 	adapterList := make([]openrtb_ext.BidderName, 0, 2)
 	syncerKeys := []string{"keyA", "keyB"}
-	testEngine := NewMetricsEngine(&cfg, adapterList, syncerKeys, modulesStages)
+	testEngine, err := NewMetricsEngine(&cfg, adapterList, syncerKeys, modulesStages)
+	if err != nil {
+		t.Fatal(err)
+	}
 	_, ok := testEngine.MetricsEngine.(*NilMetricsEngine)
 	if !ok {
 		t.Error("Expected a NilMetricsEngine, but didn't get it")
@@ -32,7 +35,10 @@ func TestGoMetricsEngine(t *testing.T) {
 	cfg.Metrics.Influxdb.Host = "localhost"
 	adapterList := make([]openrtb_ext.BidderName, 0, 2)
 	syncerKeys := []string{"keyA", "keyB"}
-	testEngine := NewMetricsEngine(&cfg, adapterList, syncerKeys, modulesStages)
+	testEngine, err := NewMetricsEngine(&cfg, adapterList, syncerKeys, modulesStages)
+	if err != nil {
+		t.Fatal(err)
+	}
 	_, ok := testEngine.MetricsEngine.(*metrics.Metrics)
 	if !ok {
 		t.Error("Expected a Metrics as MetricsEngine, but didn't get it")
